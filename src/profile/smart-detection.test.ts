@@ -1,5 +1,5 @@
 import { SmartDetector } from './smart-detection';
-import type { UserProfile } from './types';
+import type { UserProfile } from '../types';
 
 describe('SmartDetector', () => {
   let detector: SmartDetector;
@@ -8,16 +8,32 @@ describe('SmartDetector', () => {
   beforeEach(() => {
     detector = new SmartDetector();
     baseProfile = {
-      preferences: {
-        languages: [],
-        learningGoals: [],
-        currentProjects: [],
-        toolsAndFrameworks: [],
-        expertiseLevel: {},
-        avoidPatterns: []
-      },
-      createdAt: new Date(),
-      lastUpdated: new Date()
+      version: '1.0.0',
+      lastUpdated: '2024-01-01T00:00:00.000Z',
+      lastRefresh: '2024-01-01T00:00:00.000Z',
+      profile: {
+        technicalPreferences: {
+          languages: [],
+          frameworks: [],
+          tools: [],
+          patterns: []
+        },
+        workingStyle: {
+          explanationPreference: 'balanced',
+          communicationStyle: 'professional',
+          priorities: []
+        },
+        projectContext: {
+          domains: [],
+          currentProjects: [],
+          commonTasks: []
+        },
+        knowledgeLevel: {
+          expert: [],
+          proficient: [],
+          learning: []
+        }
+      }
     };
   });
 
@@ -25,59 +41,80 @@ describe('SmartDetector', () => {
     const text = 'I prefer writing code in TypeScript and Python';
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated.preferences.languages).toContain('TypeScript');
-    expect(updated.preferences.languages).toContain('Python');
+    expect(updated.profile.technicalPreferences.languages).toContain('TypeScript');
+    expect(updated.profile.technicalPreferences.languages).toContain('Python');
   });
 
-  it('detects learning goals', () => {
+  it('detects frameworks', () => {
+    const text = 'I use React and Express in my projects';
+    const updated = detector.detectAndUpdate(text, baseProfile);
+
+    expect(updated.profile.technicalPreferences.frameworks).toContain('React');
+    expect(updated.profile.technicalPreferences.frameworks).toContain('Express');
+  });
+
+  it('detects tools', () => {
+    const text = 'I work with Docker and PostgreSQL';
+    const updated = detector.detectAndUpdate(text, baseProfile);
+
+    expect(updated.profile.technicalPreferences.tools).toContain('Docker');
+    expect(updated.profile.technicalPreferences.tools).toContain('PostgreSQL');
+  });
+
+  it('detects patterns', () => {
+    const text = 'I follow TDD and use microservices architecture';
+    const updated = detector.detectAndUpdate(text, baseProfile);
+
+    expect(updated.profile.technicalPreferences.patterns).toContain('TDD');
+    expect(updated.profile.technicalPreferences.patterns).toContain('microservices');
+  });
+
+  it('detects learning topics', () => {
     const text = 'I want to learn machine learning and improve my understanding of async patterns';
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated.preferences.learningGoals).toContain('machine learning');
-    expect(updated.preferences.learningGoals).toContain('async patterns');
+    expect(updated.profile.knowledgeLevel.learning).toContain('machine learning');
+    expect(updated.profile.knowledgeLevel.learning).toContain('async patterns');
+  });
+
+  it('detects expert topics', () => {
+    const text = "I'm expert at JavaScript and very experienced with TypeScript";
+    const updated = detector.detectAndUpdate(text, baseProfile);
+
+    expect(updated.profile.knowledgeLevel.expert).toContain('JavaScript');
+    expect(updated.profile.knowledgeLevel.expert).toContain('TypeScript');
+  });
+
+  it('detects proficient topics', () => {
+    const text = "I'm proficient at Python and comfortable with Go";
+    const updated = detector.detectAndUpdate(text, baseProfile);
+
+    expect(updated.profile.knowledgeLevel.proficient).toContain('Python');
+    expect(updated.profile.knowledgeLevel.proficient).toContain('Go');
+  });
+
+  it('detects domains', () => {
+    const text = 'I work in web development and machine learning';
+    const updated = detector.detectAndUpdate(text, baseProfile);
+
+    expect(updated.profile.projectContext.domains).toContain('web development');
+    expect(updated.profile.projectContext.domains).toContain('machine learning');
   });
 
   it('detects current projects', () => {
     const text = "I'm working on a web scraper and building an API server";
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated.preferences.currentProjects).toContain('web scraper');
-    expect(updated.preferences.currentProjects).toContain('API server');
-  });
-
-  it('detects tools and frameworks', () => {
-    const text = 'I use React and Express in my projects';
-    const updated = detector.detectAndUpdate(text, baseProfile);
-
-    expect(updated.preferences.toolsAndFrameworks).toContain('React');
-    expect(updated.preferences.toolsAndFrameworks).toContain('Express');
-  });
-
-  it('detects expertise levels', () => {
-    const text = "I'm a beginner at Rust but expert in JavaScript";
-    const updated = detector.detectAndUpdate(text, baseProfile);
-
-    expect(updated.preferences.expertiseLevel['Rust']).toBe('beginner');
-    expect(updated.preferences.expertiseLevel['JavaScript']).toBe('expert');
-  });
-
-  it('detects avoidance patterns', () => {
-    const text = "Don't use any as a type and avoid using var in JavaScript";
-    const updated = detector.detectAndUpdate(text, baseProfile);
-
-    expect(updated.preferences.avoidPatterns).toContain('any as a type');
-    expect(updated.preferences.avoidPatterns).toContain('var in JavaScript');
+    expect(updated.profile.projectContext.currentProjects).toContain('web scraper');
+    expect(updated.profile.projectContext.currentProjects).toContain('API server');
   });
 
   it('updates lastUpdated timestamp', () => {
     const oldTimestamp = baseProfile.lastUpdated;
     const text = 'I prefer TypeScript';
 
-    // Small delay to ensure timestamp difference
-    setTimeout(() => {
-      const updated = detector.detectAndUpdate(text, baseProfile);
-      expect(updated.lastUpdated.getTime()).toBeGreaterThan(oldTimestamp.getTime());
-    }, 10);
+    const updated = detector.detectAndUpdate(text, baseProfile);
+    expect(updated.lastUpdated).not.toBe(oldTimestamp);
   });
 
   it('returns unchanged profile for non-preference statements', () => {

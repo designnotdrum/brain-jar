@@ -1,78 +1,106 @@
-import type { UserProfile } from './types';
+import type { UserProfile } from '../types';
 
 interface Pattern {
   regex: RegExp;
-  category: 'language' | 'learningGoal' | 'currentProject' | 'toolFramework' | 'expertise' | 'avoidance';
-  extract: (match: RegExpMatchArray) => { key?: string; value: string | number };
+  category: 'language' | 'framework' | 'tool' | 'pattern' | 'learning' | 'expert' | 'proficient' | 'domain' | 'project';
+  extract: (match: RegExpMatchArray) => { key?: string; value: string };
 }
 
 export class SmartDetector {
   private patterns: Pattern[] = [
-    // Language preferences
+    // Languages
     {
-      regex: /(?:prefer|use|write|code in|like)\s+(?:writing\s+)?(?:code\s+in\s+)?(\w+)/gi,
-      category: 'language',
-      extract: (match) => ({ value: match[1] })
-    },
-    {
-      regex: /\b(TypeScript|JavaScript|Python|Java|Go|Rust|C\+\+|Ruby|PHP|Swift|Kotlin)\b/g,
+      regex: /\b(TypeScript|JavaScript|Python|Java|Go|Rust|C\+\+|Ruby|PHP|Swift|Kotlin|C#|Scala|Haskell|Elixir)\b/g,
       category: 'language',
       extract: (match) => ({ value: match[1] })
     },
 
-    // Learning goals
+    // Frameworks
+    {
+      regex: /\b(React|Vue|Angular|Express|Django|Flask|Rails|Spring|Next\.js|Nuxt|Svelte|FastAPI|NestJS)\b/g,
+      category: 'framework',
+      extract: (match) => ({ value: match[1] })
+    },
+
+    // Tools
+    {
+      regex: /\b(Docker|Kubernetes|Git|PostgreSQL|MongoDB|Redis|Webpack|Vite|Jest|Vitest|Playwright|Cypress)\b/g,
+      category: 'tool',
+      extract: (match) => ({ value: match[1] })
+    },
+
+    // Patterns
+    {
+      regex: /\b(MVC|MVVM|microservices|monolith|REST|GraphQL|event-driven|functional programming|OOP|TDD|BDD)\b/gi,
+      category: 'pattern',
+      extract: (match) => ({ value: match[1] })
+    },
+
+    // Learning topics
     {
       regex: /(?:want to learn|learning|study|improve my understanding of)\s+([^.,!?]+)/gi,
-      category: 'learningGoal',
+      category: 'learning',
       extract: (match) => ({ value: match[1].trim() })
     },
 
-    // Current projects
+    // Expert topics
     {
-      regex: /(?:working on|building|developing)\s+(?:a\s+)?([^.,!?]+)/gi,
-      category: 'currentProject',
+      regex: /(?:expert at|expert in|very experienced with|mastered)\s+([^.,!?]+)/gi,
+      category: 'expert',
       extract: (match) => ({ value: match[1].trim() })
     },
 
-    // Tools and frameworks
+    // Proficient topics
     {
-      regex: /(?:use|using|work with)\s+(\w+)/gi,
-      category: 'toolFramework',
-      extract: (match) => ({ value: match[1] })
+      regex: /(?:proficient at|proficient in|good at|comfortable with|experienced with)\s+([^.,!?]+)/gi,
+      category: 'proficient',
+      extract: (match) => ({ value: match[1].trim() })
     },
+
+    // Domains
     {
-      regex: /\b(React|Vue|Angular|Express|Django|Flask|Rails|Spring|Next\.js|Nuxt|Svelte)\b/g,
-      category: 'toolFramework',
+      regex: /\b(web development|mobile development|data science|machine learning|DevOps|security|blockchain|IoT|cloud computing|AI)\b/gi,
+      category: 'domain',
       extract: (match) => ({ value: match[1] })
     },
 
-    // Expertise levels
+    // Projects
     {
-      regex: /(beginner|intermediate|expert|advanced)\s+(?:at|in)\s+(\w+)/gi,
-      category: 'expertise',
-      extract: (match) => ({ key: match[2], value: match[1].toLowerCase() })
-    },
-
-    // Avoidance patterns
-    {
-      regex: /(?:don't use|avoid using|never use)\s+([^.,!?]+)/gi,
-      category: 'avoidance',
+      regex: /(?:working on|building|developing)\s+(?:a\s+|an\s+)?([^.,!?]+)/gi,
+      category: 'project',
       extract: (match) => ({ value: match[1].trim() })
     }
   ];
 
   detectAndUpdate(text: string, profile: UserProfile): UserProfile {
     let updated = false;
-    const newProfile = { ...profile };
-
-    // Deep copy preferences to avoid mutations
-    newProfile.preferences = {
-      languages: [...profile.preferences.languages],
-      learningGoals: [...profile.preferences.learningGoals],
-      currentProjects: [...profile.preferences.currentProjects],
-      toolsAndFrameworks: [...profile.preferences.toolsAndFrameworks],
-      expertiseLevel: { ...profile.preferences.expertiseLevel },
-      avoidPatterns: [...profile.preferences.avoidPatterns]
+    const newProfile: UserProfile = {
+      version: profile.version,
+      lastUpdated: profile.lastUpdated,
+      lastRefresh: profile.lastRefresh,
+      profile: {
+        technicalPreferences: {
+          languages: [...profile.profile.technicalPreferences.languages],
+          frameworks: [...profile.profile.technicalPreferences.frameworks],
+          tools: [...profile.profile.technicalPreferences.tools],
+          patterns: [...profile.profile.technicalPreferences.patterns]
+        },
+        workingStyle: {
+          explanationPreference: profile.profile.workingStyle.explanationPreference,
+          communicationStyle: profile.profile.workingStyle.communicationStyle,
+          priorities: [...profile.profile.workingStyle.priorities]
+        },
+        projectContext: {
+          domains: [...profile.profile.projectContext.domains],
+          currentProjects: [...profile.profile.projectContext.currentProjects],
+          commonTasks: [...profile.profile.projectContext.commonTasks]
+        },
+        knowledgeLevel: {
+          expert: [...profile.profile.knowledgeLevel.expert],
+          proficient: [...profile.profile.knowledgeLevel.proficient],
+          learning: [...profile.profile.knowledgeLevel.learning]
+        }
+      }
     };
 
     for (const pattern of this.patterns) {
@@ -80,66 +108,94 @@ export class SmartDetector {
 
       for (const match of matches) {
         const extracted = pattern.extract(match);
+        const value = extracted.value;
 
         switch (pattern.category) {
           case 'language':
-            if (!newProfile.preferences.languages.includes(extracted.value as string)) {
-              newProfile.preferences.languages.push(extracted.value as string);
+            if (!newProfile.profile.technicalPreferences.languages.includes(value)) {
+              newProfile.profile.technicalPreferences.languages.push(value);
               updated = true;
             }
             break;
 
-          case 'learningGoal': {
-            // Split by "and" to handle multiple goals in one sentence
-            const goals = (extracted.value as string).split(/\s+and\s+/);
-            for (const goal of goals) {
-              // Remove common trigger phrases that might be included
-              let trimmedGoal = goal.trim()
+          case 'framework':
+            if (!newProfile.profile.technicalPreferences.frameworks.includes(value)) {
+              newProfile.profile.technicalPreferences.frameworks.push(value);
+              updated = true;
+            }
+            break;
+
+          case 'tool':
+            if (!newProfile.profile.technicalPreferences.tools.includes(value)) {
+              newProfile.profile.technicalPreferences.tools.push(value);
+              updated = true;
+            }
+            break;
+
+          case 'pattern':
+            if (!newProfile.profile.technicalPreferences.patterns.includes(value)) {
+              newProfile.profile.technicalPreferences.patterns.push(value);
+              updated = true;
+            }
+            break;
+
+          case 'learning': {
+            // Split by "and" to handle multiple topics in one sentence
+            const topics = value.split(/\s+and\s+/);
+            for (const topic of topics) {
+              const trimmedTopic = topic.trim()
                 .replace(/^(?:want to learn|learning|study|improve my understanding of)\s+/i, '');
-              if (trimmedGoal && !newProfile.preferences.learningGoals.includes(trimmedGoal)) {
-                newProfile.preferences.learningGoals.push(trimmedGoal);
+              if (trimmedTopic && !newProfile.profile.knowledgeLevel.learning.includes(trimmedTopic)) {
+                newProfile.profile.knowledgeLevel.learning.push(trimmedTopic);
                 updated = true;
               }
             }
             break;
           }
 
-          case 'currentProject': {
+          case 'expert': {
+            // Split by "and" to handle multiple topics in one sentence
+            const topics = value.split(/\s+and\s+/);
+            for (const topic of topics) {
+              const trimmedTopic = topic.trim()
+                .replace(/^(?:expert at|expert in|very experienced with|mastered)\s+/i, '');
+              if (trimmedTopic && !newProfile.profile.knowledgeLevel.expert.includes(trimmedTopic)) {
+                newProfile.profile.knowledgeLevel.expert.push(trimmedTopic);
+                updated = true;
+              }
+            }
+            break;
+          }
+
+          case 'proficient': {
+            // Split by "and" to handle multiple topics in one sentence
+            const topics = value.split(/\s+and\s+/);
+            for (const topic of topics) {
+              const trimmedTopic = topic.trim()
+                .replace(/^(?:proficient at|proficient in|good at|comfortable with|experienced with)\s+/i, '');
+              if (trimmedTopic && !newProfile.profile.knowledgeLevel.proficient.includes(trimmedTopic)) {
+                newProfile.profile.knowledgeLevel.proficient.push(trimmedTopic);
+                updated = true;
+              }
+            }
+            break;
+          }
+
+          case 'domain':
+            if (!newProfile.profile.projectContext.domains.includes(value)) {
+              newProfile.profile.projectContext.domains.push(value);
+              updated = true;
+            }
+            break;
+
+          case 'project': {
             // Split by "and" to handle multiple projects in one sentence
-            const projects = (extracted.value as string).split(/\s+and\s+/);
+            const projects = value.split(/\s+and\s+/);
             for (const project of projects) {
-              // Remove common trigger phrases that might be included
-              let trimmedProject = project.trim()
+              const trimmedProject = project.trim()
                 .replace(/^(?:working on|building|developing)\s+(?:a\s+|an\s+)?/i, '');
-              if (trimmedProject && !newProfile.preferences.currentProjects.includes(trimmedProject)) {
-                newProfile.preferences.currentProjects.push(trimmedProject);
-                updated = true;
-              }
-            }
-            break;
-          }
-
-          case 'toolFramework':
-            if (!newProfile.preferences.toolsAndFrameworks.includes(extracted.value as string)) {
-              newProfile.preferences.toolsAndFrameworks.push(extracted.value as string);
-              updated = true;
-            }
-            break;
-
-          case 'expertise':
-            if (extracted.key) {
-              newProfile.preferences.expertiseLevel[extracted.key] = extracted.value as string;
-              updated = true;
-            }
-            break;
-
-          case 'avoidance': {
-            // Split by "and" to handle multiple patterns in one sentence
-            const patterns = (extracted.value as string).split(/\s+and\s+(?:avoid using\s+)?/);
-            for (const patternText of patterns) {
-              const trimmedPattern = patternText.trim();
-              if (trimmedPattern && !newProfile.preferences.avoidPatterns.includes(trimmedPattern)) {
-                newProfile.preferences.avoidPatterns.push(trimmedPattern);
+              if (trimmedProject && !newProfile.profile.projectContext.currentProjects.includes(trimmedProject)) {
+                newProfile.profile.projectContext.currentProjects.push(trimmedProject);
                 updated = true;
               }
             }
@@ -150,7 +206,7 @@ export class SmartDetector {
     }
 
     if (updated) {
-      newProfile.lastUpdated = new Date();
+      newProfile.lastUpdated = new Date().toISOString();
     }
 
     return newProfile;
