@@ -1,0 +1,29 @@
+{
+  "name": "perplexity-search-mcp",
+  "version": "1.0.0",
+  "description": "MCP server providing Perplexity search with personalized context enrichment for Claude Code",
+  "main": "dist/index.js",
+  "bin": {
+    "perplexity-search-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "echo \"No tests yet\" && exit 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["mcp", "perplexity", "claude-code", "search"],
+  "author": "Nick",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.1",
+    "@perplexity-ai/perplexity_ai": "^0.18.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
