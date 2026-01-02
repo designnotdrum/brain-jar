@@ -91,50 +91,49 @@ flowchart LR
 
 ## Installation
 
-### 1. Clone and Build
+### As Claude Code Plugin (Recommended)
 
 ```bash
-cd ~/.claude/plugins
-git clone <repo-url> perplexity-search
-cd perplexity-search
-npm install
-npm run build
+# Build the plugin
+npm run build:plugin
+
+# Install to Claude Code
+claude plugin install ./release
 ```
 
-### 2. Configure API Key
+After installation, restart Claude Code. On first use, if no API key is configured, you'll see instructions to set it up.
 
-Create `~/.claude/perplexity-search/config.json`:
+### API Key Setup
 
-```json
-{
-  "apiKey": "pplx-xxxxx",
-  "defaultMaxResults": 5
-}
-```
+Set your Perplexity API key using one of these methods:
 
-Or set environment variable:
+1. **Environment variable:**
+   ```bash
+   export PERPLEXITY_API_KEY=pplx-your-key-here
+   ```
 
-```bash
-export PERPLEXITY_API_KEY="pplx-xxxxx"
-```
+2. **Config file** (`~/.claude/perplexity-search/config.json`):
+   ```json
+   {"apiKey": "pplx-your-key-here"}
+   ```
 
-### 3. Install Skill
+3. **Interactive setup:**
+   ```bash
+   node release/dist/index.js --setup
+   ```
 
-```bash
-cp docs/skills/using-perplexity-for-context.md ~/.claude/skills/
-```
+Get your API key at: https://www.perplexity.ai/settings/api
 
-### 4. Configure Claude Code
+### Manual MCP Server Setup
 
-Add to your Claude Code MCP settings (`~/.claude.json`):
+If you prefer manual configuration, add to `~/.claude.json`:
 
 ```json
 {
   "mcpServers": {
     "perplexity-search": {
       "command": "node",
-      "args": ["/Users/YOU/.claude/plugins/perplexity-search/dist/index.js"],
-      "env": {}
+      "args": ["/path/to/perplexity-search-plugin/dist/index.js"]
     }
   }
 }

@@ -20,3 +20,7 @@ npm-debug.log*
 .idea/
 *.swp
 *.swo
+
+# Plugin packaging
+release/
+*.tgz
