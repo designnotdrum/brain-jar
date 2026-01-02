@@ -1,5 +1,7 @@
 import Database from 'better-sqlite3';
 import * as crypto from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 import { Memory } from './types';
 
 interface LocalMemory {
@@ -31,6 +33,12 @@ export class LocalStore {
   private db: Database.Database;
 
   constructor(dbPath: string) {
+    // Ensure directory exists
+    const dir = path.dirname(dbPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
     this.db = new Database(dbPath);
     this.init();
   }
