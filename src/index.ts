@@ -131,7 +131,7 @@ async function runSetupWizard(): Promise<void> {
   });
 
   if (updateMcpConfig) {
-    const claudeConfigPath = path.join(os.homedir(), '.claude', 'config.json');
+    const claudeConfigPath = path.join(os.homedir(), '.claude.json');
     const serverPath = path.join(process.cwd(), 'dist', 'index.js');
 
     try {
@@ -170,7 +170,7 @@ async function runSetupWizard(): Promise<void> {
       console.error('✅ MCP config updated at', claudeConfigPath);
     } catch (error) {
       console.error('⚠️  Could not update MCP config:', (error as Error).message);
-      console.error('\n   You can manually add this to ~/.claude/config.json:');
+      console.error('\n   You can manually add this to ~/.claude.json:');
       console.error('   {');
       console.error('     "mcpServers": {');
       console.error('       "perplexity-search": {');

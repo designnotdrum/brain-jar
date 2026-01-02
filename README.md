@@ -46,7 +46,7 @@ cp docs/skills/using-perplexity-for-context.md ~/.claude/skills/
 
 ### 4. Configure Claude Code
 
-Add to your Claude Code MCP settings (`~/.claude/config.json`):
+Add to your Claude Code MCP settings (`~/.claude.json`):
 
 ```json
 {
