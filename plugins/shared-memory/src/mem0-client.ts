@@ -23,7 +23,8 @@ export class Mem0Client {
   constructor(apiKey: string, userId: string = 'default') {
     // Dynamic import to handle optional dependency
     const { MemoryClient } = require('mem0ai');
-    this.client = new MemoryClient({ api_key: apiKey });
+    // Note: MemoryClient expects 'apiKey' (camelCase), not 'api_key'
+    this.client = new MemoryClient({ apiKey });
     this.userId = userId;
   }
 
