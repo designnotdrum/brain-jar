@@ -7,9 +7,11 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { ExplainConceptTool } from './tools/explain-concept.js';
+import { AnalyzeCaptureTool } from './tools/analyze-capture.js';
 
 // Initialize tools
 const explainConceptTool = new ExplainConceptTool();
+const analyzeCaptureTool = new AnalyzeCaptureTool();
 
 async function main() {
   const server = new Server(
@@ -44,6 +46,22 @@ async function main() {
             required: ['concept'],
           },
         },
+        {
+          name: 'analyze_capture',
+          description:
+            'Analyze a network capture (HAR file, curl output, etc.) to extract endpoints, authentication patterns, and API structure.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              content: {
+                type: 'string',
+                description:
+                  'The raw content of the capture file (HAR JSON, curl verbose output, etc.)',
+              },
+            },
+            required: ['content'],
+          },
+        },
       ],
     };
   });
@@ -71,6 +89,20 @@ async function main() {
           {
             type: 'text',
             text: response,
+          },
+        ],
+      };
+    }
+
+    if (name === 'analyze_capture') {
+      const { content } = request.params.arguments as { content: string };
+      const result = await analyzeCaptureTool.analyze(content);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: result.formatted,
           },
         ],
       };
