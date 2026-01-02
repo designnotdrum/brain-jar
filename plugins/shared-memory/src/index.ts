@@ -50,21 +50,26 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  // Check configuration
+  // Check configuration - but don't exit if missing, just note it
   const configStatus = checkConfig();
-  if (configStatus.status === 'missing') {
-    console.error(getMissingConfigMessage());
-    process.exit(1);
-  }
+  const isConfigured = configStatus.status !== 'missing';
+  const config = isConfigured ? loadConfig()! : null;
 
-  const config = loadConfig()!;
+  // Local store works without Mem0 config
   const localStore = new LocalStore(LOCAL_DB_PATH);
-  const mem0Client = new Mem0Client(config.mem0_api_key);
+
+  // Mem0 client only if configured
+  const mem0Client = config ? new Mem0Client(config.mem0_api_key) : null;
+
+  if (!isConfigured) {
+    console.error('[shared-memory] Warning: Not configured. Run with --setup or create config file.');
+    console.error('[shared-memory] Local storage will work, but Mem0 cloud sync disabled.');
+  }
 
   // Create MCP server
   const server = new McpServer({
     name: 'shared-memory',
-    version: '0.1.0',
+    version: '0.1.1',
   });
 
   // Register tools
@@ -77,7 +82,7 @@ async function main(): Promise<void> {
       tags: z.array(z.string()).optional().describe('Tags for categorization'),
     },
     async (args: AddMemoryInput) => {
-      const scope = args.scope || config.default_scope;
+      const scope = args.scope || config?.default_scope || 'global';
       const tags = args.tags || [];
 
       // Store locally first (working memory)
@@ -88,24 +93,27 @@ async function main(): Promise<void> {
         source: { agent: 'claude-code', action: 'explicit' },
       });
 
-      // Also sync to Mem0 (persistent memory)
-      try {
-        await mem0Client.add(args.content, {
-          scope,
-          tags,
-          source_agent: 'claude-code',
-          source_action: 'explicit',
-        });
-      } catch (error) {
-        // Log but don't fail - local storage succeeded
-        console.error('[shared-memory] Mem0 sync failed:', error);
+      // Also sync to Mem0 (persistent memory) if configured
+      if (mem0Client) {
+        try {
+          await mem0Client.add(args.content, {
+            scope,
+            tags,
+            source_agent: 'claude-code',
+            source_action: 'explicit',
+          });
+        } catch (error) {
+          // Log but don't fail - local storage succeeded
+          console.error('[shared-memory] Mem0 sync failed:', error);
+        }
       }
 
+      const syncNote = mem0Client ? '' : ' (local only - configure Mem0 for cloud sync)';
       return {
         content: [
           {
             type: 'text' as const,
-            text: `Memory stored (id: ${memory.id})`,
+            text: `Memory stored (id: ${memory.id})${syncNote}`,
           },
         ],
       };
@@ -126,8 +134,8 @@ async function main(): Promise<void> {
       // Try local first
       let results = localStore.search(args.query, args.scope, limit);
 
-      // If few local results, also search Mem0
-      if (results.length < limit) {
+      // If few local results, also search Mem0 (if configured)
+      if (mem0Client && results.length < limit) {
         try {
           const mem0Results = await mem0Client.search(args.query, limit);
           // Merge, avoiding duplicates by content
@@ -147,14 +155,15 @@ async function main(): Promise<void> {
         results = results.filter((r) => r.scope === args.scope || r.scope === 'global');
       }
 
+      const syncNote = mem0Client ? '' : '\n\n(Searching local only - configure Mem0 for cloud sync)';
       return {
         content: [
           {
             type: 'text' as const,
             text:
               results.length > 0
-                ? results.map((m) => `[${m.scope}] ${m.content}`).join('\n\n---\n\n')
-                : 'No memories found.',
+                ? results.map((m) => `[${m.scope}] ${m.content}`).join('\n\n---\n\n') + syncNote
+                : 'No memories found.' + syncNote,
           },
         ],
       };
@@ -204,11 +213,13 @@ async function main(): Promise<void> {
     async (args: { id: string }) => {
       const deleted = localStore.delete(args.id);
 
-      // Also try to delete from Mem0
-      try {
-        await mem0Client.delete(args.id);
-      } catch {
-        // Ignore - might not exist in Mem0
+      // Also try to delete from Mem0 (if configured)
+      if (mem0Client) {
+        try {
+          await mem0Client.delete(args.id);
+        } catch {
+          // Ignore - might not exist in Mem0
+        }
       }
 
       return {
