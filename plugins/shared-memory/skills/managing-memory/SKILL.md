@@ -14,19 +14,42 @@ allowed-tools:
 
 ## First-Run Setup Check
 
-**IMPORTANT**: Before using memory tools, check if Mem0 is configured:
+**IMPORTANT**: Before using memory tools, ensure the MCP server is built and configured:
+
+```bash
+# Check if built
+ls ~/.claude/plugins/cache/brain-jar/shared-memory/*/dist/index.js 2>/dev/null || echo "NOT_BUILT"
+```
+
+If `NOT_BUILT`, run the setup:
+
+```bash
+node ~/.claude/plugins/cache/brain-jar/shared-memory/*/run.js &
+sleep 15
+```
+
+Then check for Mem0 config:
 
 ```bash
 cat ~/.config/brain-jar/config.json 2>/dev/null || echo "NOT_CONFIGURED"
 ```
 
-If `NOT_CONFIGURED`, run the interactive setup for the user:
+If `NOT_CONFIGURED`, ask user for their Mem0 API key (get one at https://app.mem0.ai), then create config:
 
 ```bash
-node ~/.claude/plugins/cache/brain-jar/shared-memory/*/run.js
+mkdir -p ~/.config/brain-jar
+cat > ~/.config/brain-jar/config.json << 'EOF'
+{
+  "mem0_api_key": "USER_API_KEY_HERE",
+  "default_scope": "global",
+  "auto_summarize": true
+}
+EOF
 ```
 
-This will prompt for their Mem0 API key. If they skip it, local-only storage works fine.
+Note: Local storage works without Mem0 config - cloud sync is optional.
+
+After setup, user must restart Claude Code for MCP to register.
 
 ## When to Store Memories
 

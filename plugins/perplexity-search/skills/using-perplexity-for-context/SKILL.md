@@ -3,9 +3,42 @@ name: using-perplexity-for-context
 description: "Automatically use Perplexity search for personalized context enrichment. Use when facing unfamiliar technologies, decision points, learning questions, or preference-dependent choices."
 allowed-tools:
   - mcp__perplexity-search__perplexity_search
+  - Bash
+  - Read
 ---
 
 # Using Perplexity for Context
+
+## First-Run Setup Check
+
+**IMPORTANT**: Before using perplexity tools, ensure the MCP server is built and configured:
+
+```bash
+# Check if built
+ls ~/.claude/plugins/cache/brain-jar/perplexity-search/*/dist/index.js 2>/dev/null || echo "NOT_BUILT"
+```
+
+If `NOT_BUILT`, run the setup:
+
+```bash
+node ~/.claude/plugins/cache/brain-jar/perplexity-search/*/run.js &
+sleep 10
+```
+
+Then check for API key config:
+
+```bash
+cat ~/.claude/perplexity-search/config.json 2>/dev/null || echo "NOT_CONFIGURED"
+```
+
+If `NOT_CONFIGURED`, create the config (ask user for their Perplexity API key first):
+
+```bash
+mkdir -p ~/.claude/perplexity-search
+echo '{"apiKey": "USER_API_KEY_HERE", "defaultMaxResults": 5}' > ~/.claude/perplexity-search/config.json
+```
+
+After setup, user must restart Claude Code for MCP to register.
 
 ## When to Use
 
