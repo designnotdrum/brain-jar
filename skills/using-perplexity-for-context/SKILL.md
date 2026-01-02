@@ -1,6 +1,8 @@
 ---
 name: using-perplexity-for-context
-description: Automatically use Perplexity search for personalized context enrichment
+description: "Automatically use Perplexity search for personalized context enrichment. Use when facing unfamiliar technologies, decision points, learning questions, or preference-dependent choices."
+allowed-tools:
+  - mcp__perplexity-search__perplexity_search
 ---
 
 # Using Perplexity for Context
