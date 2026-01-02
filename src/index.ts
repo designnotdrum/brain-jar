@@ -11,59 +11,8 @@ import * as path from 'path';
 import * as os from 'os';
 import { ProfileManager } from './profile/manager.js';
 import { PerplexitySearchTool } from './tools/perplexity-search.js';
+import { checkConfig, getMissingConfigMessage } from './startup.js';
 import { input, confirm } from '@inquirer/prompts';
-
-interface Config {
-  apiKey?: string;
-}
-
-/**
- * Check if configuration exists
- */
-async function configExists(): Promise<boolean> {
-  const configPath = path.join(
-    os.homedir(),
-    '.claude',
-    'perplexity-search',
-    'config.json'
-  );
-
-  try {
-    await fs.access(configPath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Load configuration from config file or environment variable
- */
-async function loadConfig(): Promise<Config> {
-  const configPath = path.join(
-    os.homedir(),
-    '.claude',
-    'perplexity-search',
-    'config.json'
-  );
-
-  try {
-    const configContent = await fs.readFile(configPath, 'utf-8');
-    const config = JSON.parse(configContent);
-    if (config.apiKey) {
-      return config;
-    }
-  } catch (error) {
-    // Config file doesn't exist or is invalid, fall through to env var
-  }
-
-  // Check environment variable
-  if (process.env.PERPLEXITY_API_KEY) {
-    return { apiKey: process.env.PERPLEXITY_API_KEY };
-  }
-
-  return {};
-}
 
 /**
  * Interactive setup wizard for first-time users
@@ -196,20 +145,21 @@ async function runSetupWizard(): Promise<void> {
  * Main function to start the MCP server
  */
 async function main() {
-  // Check if config exists, if not run setup wizard
-  if (!(await configExists()) && !process.env.PERPLEXITY_API_KEY) {
+  // Handle --setup flag
+  if (process.argv.includes('--setup')) {
     await runSetupWizard();
     return;
   }
 
-  const config = await loadConfig();
+  // Check configuration
+  const configStatus = await checkConfig();
 
-  if (!config.apiKey) {
-    console.error(
-      'Perplexity API key not found. Set PERPLEXITY_API_KEY environment variable or create ~/.claude/perplexity-search/config.json'
-    );
+  if (configStatus.status === 'missing') {
+    console.error(getMissingConfigMessage(configStatus.configPath));
     process.exit(1);
   }
+
+  const apiKey = configStatus.apiKey!;
 
   // Initialize components
   const profilePath = path.join(
@@ -219,7 +169,7 @@ async function main() {
     'user-profile.json'
   );
   const profileManager = new ProfileManager(profilePath);
-  const searchTool = new PerplexitySearchTool(config.apiKey, profileManager);
+  const searchTool = new PerplexitySearchTool(apiKey, profileManager);
 
   // Check if profile needs refresh (non-blocking)
   profileManager.needsRefresh().then((needs: boolean) => {
