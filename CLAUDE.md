@@ -1,5 +1,21 @@
 # Brain-Jar Development Guidelines
 
+## Plugin Structure (CRITICAL)
+
+**Claude Code expects `plugin.json` inside a `.claude-plugin/` subdirectory, NOT at the root level!**
+
+```
+plugins/my-plugin/
+├── .claude-plugin/
+│   └── plugin.json      <-- MUST be here!
+├── run.js
+├── package.json
+├── src/
+│   └── index.ts
+├── dist/
+└── skills/
+```
+
 ## UX Patterns for Claude Code Plugins
 
 ### N00b-Proof Installation
@@ -56,14 +72,19 @@ require('./dist/index.js');
 
 ### plugin.json Pattern
 
+File location: `.claude-plugin/plugin.json`
+
 ```json
 {
+  "name": "plugin-name",
+  "version": "1.0.0",
   "mcpServers": {
     "plugin-name": {
       "command": "node",
       "args": ["${CLAUDE_PLUGIN_ROOT}/run.js"]
     }
-  }
+  },
+  "skills": "./skills/"
 }
 ```
 
@@ -71,9 +92,9 @@ require('./dist/index.js');
 
 When making changes, update version in ALL these files:
 - `package.json`
-- `plugin.json`
+- `.claude-plugin/plugin.json`
 - `src/index.ts` (McpServer version)
-- `.claude-plugin/marketplace.json`
+- Root `.claude-plugin/marketplace.json`
 
 ## Testing
 
