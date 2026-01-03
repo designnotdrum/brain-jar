@@ -61,7 +61,26 @@ Update these files with the new version (same commit):
 2. `plugins/<plugin>/.claude-plugin/plugin.json` - `"version": "X.Y.Z"`
 3. `plugins/<plugin>/src/index.ts` - `version: 'X.Y.Z'` in McpServer config
 4. `.claude-plugin/marketplace.json` - version for this plugin
-5. `README.md` - version in plugins table and highlights section
+5. `README.md` - version in plugins table AND highlights section (see below)
+
+### 5a. README Highlights Section
+
+Check if a highlights section exists for this plugin:
+- Look for `### <plugin> highlights (vX.Y.Z)` in README.md
+
+**If section exists:** Update the version in the heading.
+
+**If section doesn't exist:** Create one after the plugins table:
+
+```markdown
+### <plugin> highlights (vX.Y.Z)
+
+- **<feature from message>** - <brief description based on commit message>
+```
+
+For subsequent releases, add new bullet points to the existing section describing what changed (based on the commit message provided).
+
+The highlights section should be concise - 3-5 bullet points max covering the most important features/fixes.
 
 ### 6. Rebuild After Version Update
 
