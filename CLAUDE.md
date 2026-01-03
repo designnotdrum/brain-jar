@@ -88,13 +88,23 @@ File location: `.claude-plugin/plugin.json`
 }
 ```
 
-### Version Bumping
+### Version Bumping (AUTOMATIC)
 
-When making changes, update version in ALL these files:
-- `package.json`
-- `.claude-plugin/plugin.json`
-- `src/index.ts` (McpServer version)
-- Root `.claude-plugin/marketplace.json`
+**When bumping a plugin version, you MUST update ALL of these:**
+
+1. **Plugin files:**
+   - `plugins/<name>/package.json`
+   - `plugins/<name>/.claude-plugin/plugin.json`
+   - `plugins/<name>/src/index.ts` (McpServer version)
+
+2. **Marketplace:**
+   - `.claude-plugin/marketplace.json` - update version for that plugin
+
+3. **Documentation:**
+   - `README.md` - update the plugin's entry in the plugins table
+   - `plugins/<name>/README.md` (if exists) - update version and changelog
+
+**This is non-negotiable.** Version changes without documentation updates create confusion for users. When you bump a version, proactively update all related docs in the same commit.
 
 ## Testing
 

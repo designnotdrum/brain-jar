@@ -4,23 +4,18 @@ Claude Code plugins for enhanced agent memory and search.
 
 ## Plugins
 
-### perplexity-search
+| Plugin | Version | Description |
+|--------|---------|-------------|
+| [perplexity-search](./plugins/perplexity-search/README.md) | 1.0.0 | Web search via Perplexity AI with smart context detection |
+| [shared-memory](./plugins/shared-memory/README.md) | 1.2.0 | Persistent memory with semantic search, user profiles, and auto-summaries |
+| [forensics](./plugins/forensics/skills/investigate/SKILL.md) | 0.1.0 | Reverse engineer black-box systems: APIs, protocols, features |
 
-Web search via Perplexity AI with smart context detection.
+### shared-memory highlights (v1.2.0)
 
-[Documentation](./plugins/perplexity-search/README.md)
-
-### shared-memory
-
-Persistent memory across agents with semantic search. Memories travel with you across sessions, devices, and other AI agents.
-
-[Documentation](./plugins/shared-memory/README.md)
-
-### forensics
-
-Reverse engineer black-box systems: APIs, protocols, features, and data formats. Guided workflows adapt to your skill level.
-
-[Documentation](./plugins/forensics/skills/investigate/SKILL.md)
+- **Profile sync** - Your profile syncs to Mem0 as append-only snapshots
+- **Memory timeline** - Query memories by date range with `get_memory_timeline`
+- **Auto-summaries** - Activity summaries generated automatically based on activity threshold
+- **Profile history** - Track how your preferences evolve over time
 
 ## Installation
 
