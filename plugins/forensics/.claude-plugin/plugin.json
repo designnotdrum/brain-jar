@@ -1,0 +1,17 @@
+{
+  "name": "forensics",
+  "version": "0.1.0",
+  "description": "Reverse engineer black-box systems: APIs, protocols, features, and data formats",
+  "author": {
+    "name": "Nick Mason"
+  },
+  "license": "MIT",
+  "keywords": ["forensics", "reverse-engineering", "protocol", "mcp", "brain-jar"],
+  "mcpServers": {
+    "forensics": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/run.js"]
+    }
+  },
+  "skills": "./skills/"
+}
