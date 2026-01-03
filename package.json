@@ -9,10 +9,17 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
+    "bundle": "node scripts/bundle-plugins.js",
     "typecheck": "npm run typecheck --workspaces",
     "build:core": "npm run build -w @brain-jar/core",
     "build:shared-memory": "npm run build -w shared-memory-mcp",
-    "build:perplexity": "npm run build -w perplexity-search-mcp"
+    "build:perplexity": "npm run build -w perplexity-search-mcp",
+    "build:forensics": "npm run build -w forensics-mcp",
+    "build:pattern-radar": "npm run build -w pattern-radar-mcp",
+    "build:visual-thinking": "npm run build -w visual-thinking-mcp"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.27.2"
+  }
 }

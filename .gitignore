@@ -5,8 +5,9 @@ plugins/*/node_modules/
 # Build output
 dist/
 plugins/*/dist/
-# Exception: commit shared-memory dist for zero-build install
-!plugins/shared-memory/dist/
+# Exception: commit plugin bundles for zero-build install
+!plugins/*/dist/bundle.js
+!plugins/*/dist/package.json
 
 # Plugin packaging
 release/

@@ -1,0 +1,19 @@
+{
+  "name": "shared-memory-mcp",
+  "version": "2.0.0",
+  "description": "MCP server providing persistent memory across agents via Mem0",
+  "main": "dist/index.js",
+  "scripts": {},
+  "keywords": [
+    "mcp",
+    "memory",
+    "mem0",
+    "claude-code"
+  ],
+  "author": "Nick Mason",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "better-sqlite3": "^12.5.0"
+  }
+}

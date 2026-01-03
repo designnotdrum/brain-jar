@@ -1,0 +1,20 @@
+{
+  "name": "visual-thinking-mcp",
+  "version": "0.1.2",
+  "description": "MCP server for persistent visual thinking diagrams",
+  "main": "dist/index.js",
+  "scripts": {},
+  "keywords": [
+    "mcp",
+    "mermaid",
+    "diagrams",
+    "visual-thinking",
+    "claude-code"
+  ],
+  "author": "Nick Mason",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "better-sqlite3": "^12.5.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "pattern-radar-mcp",
+  "version": "0.1.1",
+  "description": "MCP server for personalized trend and pattern detection",
+  "main": "dist/index.js",
+  "scripts": {},
+  "keywords": [
+    "mcp",
+    "trends",
+    "patterns",
+    "hacker-news",
+    "github",
+    "claude-code"
+  ],
+  "author": "Nick Mason",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {}
+}

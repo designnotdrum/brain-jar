@@ -1,27 +1,31 @@
 #!/usr/bin/env node
+/**
+ * Forensics MCP Server launcher.
+ *
+ * Uses pre-built bundle when available (marketplace installs).
+ * Falls back to npm install + build for development.
+ */
+const { execSync } = require('child_process');
+const { existsSync } = require('fs');
+const { join } = require('path');
 
-const path = require('path');
-const { spawn } = require('child_process');
+const root = __dirname;
+process.chdir(root);
 
-const distPath = path.join(__dirname, 'dist', 'index.js');
+const bundlePath = join(root, 'dist', 'bundle.js');
+const indexPath = join(root, 'dist', 'index.js');
 
-// Check if dist exists, if not run build
-const fs = require('fs');
-if (!fs.existsSync(distPath)) {
-  console.error('[forensics] Building plugin...');
-  const build = spawn('npm', ['run', 'build'], {
-    cwd: __dirname,
-    stdio: 'inherit',
-    shell: true
-  });
-  build.on('close', (code) => {
-    if (code === 0) {
-      require(distPath);
-    } else {
-      console.error('[forensics] Build failed');
-      process.exit(1);
-    }
-  });
+// Prefer bundle (no npm install needed)
+if (existsSync(bundlePath)) {
+  require(bundlePath);
+} else if (existsSync(indexPath)) {
+  // Development: dist exists but no bundle
+  require(indexPath);
 } else {
-  require(distPath);
+  // Full development setup: install deps and build
+  console.error('[forensics] Development mode: installing dependencies...');
+  execSync('npm install --legacy-peer-deps', { stdio: 'inherit' });
+  console.error('[forensics] Building...');
+  execSync('npm run build', { stdio: 'inherit' });
+  require(indexPath);
 }

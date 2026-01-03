@@ -1,0 +1,20 @@
+{
+  "name": "perplexity-search-mcp",
+  "version": "2.0.0",
+  "description": "MCP server providing Perplexity search with personalized context enrichment for Claude Code",
+  "main": "dist/index.js",
+  "bin": {
+    "perplexity-search-mcp": "dist/index.js"
+  },
+  "scripts": {},
+  "keywords": [
+    "mcp",
+    "perplexity",
+    "claude-code",
+    "search"
+  ],
+  "author": "Nick",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {}
+}
