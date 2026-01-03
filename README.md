@@ -8,7 +8,7 @@ Claude Code plugins for enhanced agent memory and search.
 |--------|---------|-------------|
 | [perplexity-search](./plugins/perplexity-search/README.md) | 2.0.0 | Web search via Perplexity AI with smart context detection |
 | [shared-memory](./plugins/shared-memory/README.md) | 2.0.0 | Persistent memory with semantic search, user profiles, and auto-summaries |
-| [forensics](./plugins/forensics/skills/investigate/SKILL.md) | 0.1.0 | Reverse engineer black-box systems: APIs, protocols, features |
+| [forensics](./plugins/forensics/skills/investigate/SKILL.md) | 0.2.0 | Reverse engineer black-box systems: APIs, protocols, features |
 
 ### v2.0.0 highlights
 
@@ -22,6 +22,14 @@ Claude Code plugins for enhanced agent memory and search.
 - Now uses shared `@brain-jar/core` profile schema
 - Mem0 integration for search history context (stores results, retrieves relevant past searches)
 - Reads profile from shared brain-jar location (`~/.config/brain-jar/user-profile.json`)
+
+### forensics highlights (v0.2.0)
+
+- **@brain-jar/core integration** - Persistent investigation state via Mem0
+- **Investigation management** - `start_investigation`, `list_investigations`, `get_investigation` tools
+- **build_spec tool** - Generate OpenAPI or TypeScript client from captured endpoints
+- **Skill-level adaptation** - Tools auto-adapt verbosity based on user profile
+- **Concept tracking** - Skip explanations for previously learned concepts
 
 ## Installation
 
