@@ -10,7 +10,7 @@ process.chdir(root);
 // Install dependencies if needed
 if (!existsSync(join(root, 'node_modules'))) {
   console.error('[shared-memory] Installing dependencies...');
-  execSync('npm install', { stdio: 'inherit' });
+  execSync('npm install --legacy-peer-deps', { stdio: 'inherit' });
 }
 
 // Build if needed
