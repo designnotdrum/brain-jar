@@ -148,6 +148,42 @@ export class LocalStore {
     return result.changes > 0;
   }
 
+  /**
+   * Get memories within a date range for a scope.
+   */
+  getByDateRange(scope: string, start: Date, end: Date): Memory[] {
+    const stmt = this.db.prepare(`
+      SELECT * FROM memories
+      WHERE scope = ?
+        AND created_at >= ?
+        AND created_at <= ?
+      ORDER BY created_at DESC
+    `);
+    const rows = stmt.all(scope, start.toISOString(), end.toISOString()) as LocalMemory[];
+    return rows.map((row) => this.toMemory(row));
+  }
+
+  /**
+   * Count memories added since a given date for a scope.
+   */
+  countSince(scope: string, since: Date): number {
+    const stmt = this.db.prepare(`
+      SELECT COUNT(*) as count FROM memories
+      WHERE scope = ? AND created_at >= ?
+    `);
+    const result = stmt.get(scope, since.toISOString()) as { count: number };
+    return result.count;
+  }
+
+  /**
+   * Get all unique scopes with activity.
+   */
+  getActiveScopes(): string[] {
+    const stmt = this.db.prepare(`SELECT DISTINCT scope FROM memories`);
+    const rows = stmt.all() as { scope: string }[];
+    return rows.map((r) => r.scope);
+  }
+
   close(): void {
     this.db.close();
   }

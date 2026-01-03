@@ -24,6 +24,17 @@ export interface ProfileSnapshot {
   mem0Id?: string;
 }
 
+// Activity summary stored in Mem0
+export interface ActivitySummary {
+  content: string;
+  scope: string;
+  periodStart: string;
+  periodEnd: string;
+  memoryCount: number;
+  timestamp: string;
+  mem0Id?: string;
+}
+
 export class Mem0Client {
   private client: any; // mem0ai client
   private userId: string;
@@ -202,5 +213,87 @@ export class Mem0Client {
       console.warn('Failed to fetch profile history from Mem0:', error);
       return [];
     }
+  }
+
+  // --- Activity Summary Methods ---
+
+  /**
+   * Saves an activity summary to Mem0.
+   */
+  async saveSummary(
+    scope: string,
+    content: string,
+    periodStart: Date,
+    periodEnd: Date,
+    memoryCount: number
+  ): Promise<string | null> {
+    try {
+      const timestamp = new Date().toISOString();
+      const result = await this.client.add(content, {
+        user_id: this.userId,
+        metadata: {
+          type: 'activity-summary',
+          scope,
+          period_start: periodStart.toISOString(),
+          period_end: periodEnd.toISOString(),
+          memory_count: memoryCount,
+          timestamp,
+        },
+      });
+      return result.id;
+    } catch (error) {
+      console.warn('Failed to save activity summary to Mem0:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Gets activity summaries from Mem0.
+   */
+  async getSummaries(scope?: string, since?: Date, limit?: number): Promise<ActivitySummary[]> {
+    try {
+      const results: Mem0Memory[] = await this.client.getAll({
+        user_id: this.userId,
+      });
+
+      // Filter to activity summaries
+      let summaries: ActivitySummary[] = results
+        .filter((r) => r.metadata?.type === 'activity-summary')
+        .filter((r) => !scope || r.metadata?.scope === scope)
+        .map((r): ActivitySummary => ({
+          content: r.memory,
+          scope: (r.metadata?.scope as string) || 'global',
+          periodStart: (r.metadata?.period_start as string) || '',
+          periodEnd: (r.metadata?.period_end as string) || '',
+          memoryCount: (r.metadata?.memory_count as number) || 0,
+          timestamp: (r.metadata?.timestamp as string) || r.created_at || '',
+          mem0Id: r.id,
+        }))
+        .sort((a, b) => b.timestamp.localeCompare(a.timestamp)); // Newest first
+
+      // Filter by date if provided
+      if (since) {
+        const sinceIso = since.toISOString();
+        summaries = summaries.filter((s) => s.timestamp >= sinceIso);
+      }
+
+      // Apply limit if provided
+      if (limit && limit > 0) {
+        summaries = summaries.slice(0, limit);
+      }
+
+      return summaries;
+    } catch (error) {
+      console.warn('Failed to fetch activity summaries from Mem0:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Gets the most recent summary for a scope.
+   */
+  async getLatestSummary(scope: string): Promise<ActivitySummary | null> {
+    const summaries = await this.getSummaries(scope, undefined, 1);
+    return summaries.length > 0 ? summaries[0] : null;
   }
 }

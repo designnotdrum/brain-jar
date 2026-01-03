@@ -8,6 +8,7 @@ import * as os from 'os';
 
 import { LocalStore } from './local-store';
 import { Mem0Client } from './mem0-client';
+import { SummaryManager } from './summary-manager';
 import { checkConfig, loadConfig, saveConfig, getMissingConfigMessage, getConfigPath } from './config';
 import { AddMemoryInput, SearchMemoryInput, ListMemoriesInput } from './types';
 import { ProfileManager, InferenceEngine, ProfileSection } from './profile';
@@ -66,6 +67,9 @@ async function main(): Promise<void> {
   const profileManager = new ProfileManager();
   const inferenceEngine = new InferenceEngine();
 
+  // Summary manager for auto-summaries
+  const summaryManager = new SummaryManager(mem0Client, localStore);
+
   // Connect profile manager to Mem0 if configured
   if (mem0Client) {
     profileManager.setMem0Client(mem0Client);
@@ -86,7 +90,7 @@ async function main(): Promise<void> {
   // Create MCP server
   const server = new McpServer({
     name: 'shared-memory',
-    version: '1.1.0',
+    version: '1.2.0',
   });
 
   // Register tools
@@ -125,12 +129,23 @@ async function main(): Promise<void> {
         }
       }
 
+      // Check for auto-summary trigger
+      let summaryNote = '';
+      try {
+        const summaryResult = await summaryManager.onMemoryAdded(scope);
+        if (summaryResult.summarized) {
+          summaryNote = ` [Auto-summary generated for ${scope}]`;
+        }
+      } catch (error) {
+        console.error('[shared-memory] Auto-summary check failed:', error);
+      }
+
       const syncNote = mem0Client ? '' : ' (local only - configure Mem0 for cloud sync)';
       return {
         content: [
           {
             type: 'text' as const,
-            text: `Memory stored (id: ${memory.id})${syncNote}`,
+            text: `Memory stored (id: ${memory.id})${syncNote}${summaryNote}`,
           },
         ],
       };
@@ -530,6 +545,192 @@ async function main(): Promise<void> {
               {
                 message: `Found ${snapshots.length} profile snapshot(s)`,
                 snapshots: formatted,
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    }
+  );
+
+  // --- Activity Summary Tools ---
+
+  server.tool(
+    'get_memory_timeline',
+    'Get memories grouped by time period for temporal analysis',
+    {
+      scope: z.string().optional().describe('Filter by scope'),
+      start: z.string().optional().describe('Start date (ISO format)'),
+      end: z.string().optional().describe('End date (ISO format)'),
+      group_by: z.enum(['day', 'week', 'month']).optional().describe('How to group results'),
+    },
+    async (args: { scope?: string; start?: string; end?: string; group_by?: 'day' | 'week' | 'month' }) => {
+      const start = args.start ? new Date(args.start) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // Default 30 days
+      const end = args.end ? new Date(args.end) : new Date();
+      const scope = args.scope || 'global';
+      const groupBy = args.group_by || 'day';
+
+      const memories = localStore.getByDateRange(scope, start, end);
+
+      if (memories.length === 0) {
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `No memories found for ${scope} between ${start.toISOString().split('T')[0]} and ${end.toISOString().split('T')[0]}`,
+            },
+          ],
+        };
+      }
+
+      // Group memories by period
+      const groups: Record<string, typeof memories> = {};
+      for (const m of memories) {
+        const date = m.created_at;
+        let key: string;
+
+        if (groupBy === 'day') {
+          key = date.toISOString().split('T')[0];
+        } else if (groupBy === 'week') {
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          key = `Week of ${weekStart.toISOString().split('T')[0]}`;
+        } else {
+          key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(m);
+      }
+
+      // Format output
+      const formatted = Object.entries(groups)
+        .sort((a, b) => b[0].localeCompare(a[0])) // Newest first
+        .map(([period, mems]) => ({
+          period,
+          count: mems.length,
+          memories: mems.slice(0, 5).map((m) => ({
+            content: m.content.substring(0, 100) + (m.content.length > 100 ? '...' : ''),
+            tags: m.tags,
+          })),
+        }));
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify(
+              {
+                scope,
+                period: `${start.toISOString().split('T')[0]} to ${end.toISOString().split('T')[0]}`,
+                total_memories: memories.length,
+                grouped_by: groupBy,
+                groups: formatted,
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    }
+  );
+
+  server.tool(
+    'get_activity_summaries',
+    'Get stored activity summaries for a scope',
+    {
+      scope: z.string().optional().describe('Filter by scope'),
+      since: z.string().optional().describe('Filter by date (ISO format)'),
+      limit: z.number().optional().describe('Maximum summaries to return'),
+    },
+    async (args: { scope?: string; since?: string; limit?: number }) => {
+      if (!mem0Client) {
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: 'Activity summaries require Mem0 configuration.',
+            },
+          ],
+        };
+      }
+
+      const since = args.since ? new Date(args.since) : undefined;
+      const summaries = await mem0Client.getSummaries(args.scope, since, args.limit || 10);
+
+      if (summaries.length === 0) {
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: args.scope
+                ? `No activity summaries found for ${args.scope}.`
+                : 'No activity summaries found.',
+            },
+          ],
+        };
+      }
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify(
+              {
+                message: `Found ${summaries.length} activity summary(ies)`,
+                summaries: summaries.map((s) => ({
+                  scope: s.scope,
+                  period: `${s.periodStart.split('T')[0]} to ${s.periodEnd.split('T')[0]}`,
+                  memory_count: s.memoryCount,
+                  content: s.content,
+                })),
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    }
+  );
+
+  server.tool(
+    'trigger_summary',
+    'Manually trigger an activity summary for a scope',
+    {
+      scope: z.string().describe('Scope to summarize (e.g., "global" or "project:my-project")'),
+    },
+    async (args: { scope: string }) => {
+      const summary = await summaryManager.triggerSummary(args.scope);
+
+      if (!summary) {
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `No memories found for ${args.scope} to summarize.`,
+            },
+          ],
+        };
+      }
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify(
+              {
+                message: 'Summary generated successfully',
+                summary: {
+                  scope: summary.scope,
+                  period: `${summary.periodStart.split('T')[0]} to ${summary.periodEnd.split('T')[0]}`,
+                  memory_count: summary.memoryCount,
+                  content: summary.content,
+                  stored_in_mem0: !!summary.mem0Id,
+                },
               },
               null,
               2
