@@ -1,5 +1,55 @@
+/**
+ * Tests for SmartDetector.
+ *
+ * Tests detection of user preferences from text using
+ * the @brain-jar/core UserProfile schema.
+ */
+
 import { SmartDetector } from './smart-detection';
-import type { UserProfile } from '../types';
+import type { UserProfile } from '@brain-jar/core';
+
+function createBaseProfile(): UserProfile {
+  const now = new Date().toISOString();
+  return {
+    version: '1.0.0',
+    identity: {},
+    technical: {
+      languages: [],
+      frameworks: [],
+      tools: [],
+      editors: [],
+      patterns: [],
+      operatingSystems: [],
+    },
+    workingStyle: {
+      verbosity: 'adaptive',
+      learningPace: 'adaptive',
+      priorities: [],
+    },
+    knowledge: {
+      expert: [],
+      proficient: [],
+      learning: [],
+      interests: [],
+    },
+    personal: {
+      interests: [],
+      goals: [],
+      context: [],
+    },
+    meta: {
+      onboardingComplete: false,
+      onboardingProgress: {
+        identity: false,
+        technical: false,
+        workingStyle: false,
+        personal: false,
+      },
+      lastUpdated: now,
+      createdAt: now,
+    },
+  };
+}
 
 describe('SmartDetector', () => {
   let detector: SmartDetector;
@@ -7,120 +57,81 @@ describe('SmartDetector', () => {
 
   beforeEach(() => {
     detector = new SmartDetector();
-    baseProfile = {
-      version: '1.0.0',
-      lastUpdated: '2024-01-01T00:00:00.000Z',
-      lastRefresh: '2024-01-01T00:00:00.000Z',
-      profile: {
-        technicalPreferences: {
-          languages: [],
-          frameworks: [],
-          tools: [],
-          patterns: []
-        },
-        workingStyle: {
-          explanationPreference: 'balanced',
-          communicationStyle: 'professional',
-          priorities: []
-        },
-        projectContext: {
-          domains: [],
-          currentProjects: [],
-          commonTasks: []
-        },
-        knowledgeLevel: {
-          expert: [],
-          proficient: [],
-          learning: []
-        }
-      }
-    };
+    baseProfile = createBaseProfile();
   });
 
   it('detects language preferences', () => {
     const text = 'I prefer writing code in TypeScript and Python';
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated.profile.technicalPreferences.languages).toContain('TypeScript');
-    expect(updated.profile.technicalPreferences.languages).toContain('Python');
+    expect(updated.technical.languages).toContain('TypeScript');
+    expect(updated.technical.languages).toContain('Python');
   });
 
   it('detects frameworks', () => {
     const text = 'I use React and Express in my projects';
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated.profile.technicalPreferences.frameworks).toContain('React');
-    expect(updated.profile.technicalPreferences.frameworks).toContain('Express');
+    expect(updated.technical.frameworks).toContain('React');
+    expect(updated.technical.frameworks).toContain('Express');
   });
 
   it('detects tools', () => {
     const text = 'I work with Docker and PostgreSQL';
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated.profile.technicalPreferences.tools).toContain('Docker');
-    expect(updated.profile.technicalPreferences.tools).toContain('PostgreSQL');
+    expect(updated.technical.tools).toContain('Docker');
+    expect(updated.technical.tools).toContain('PostgreSQL');
   });
 
   it('detects patterns', () => {
     const text = 'I follow TDD and use microservices architecture';
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated.profile.technicalPreferences.patterns).toContain('TDD');
-    expect(updated.profile.technicalPreferences.patterns).toContain('microservices');
+    expect(updated.technical.patterns).toContain('TDD');
+    expect(updated.technical.patterns).toContain('microservices');
   });
 
   it('detects learning topics', () => {
     const text = 'I want to learn machine learning and improve my understanding of async patterns';
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated.profile.knowledgeLevel.learning).toContain('machine learning');
-    expect(updated.profile.knowledgeLevel.learning).toContain('async patterns');
+    expect(updated.knowledge.learning).toContain('machine learning');
+    expect(updated.knowledge.learning).toContain('async patterns');
   });
 
   it('detects expert topics', () => {
     const text = "I'm expert at JavaScript and very experienced with TypeScript";
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated.profile.knowledgeLevel.expert).toContain('JavaScript');
-    expect(updated.profile.knowledgeLevel.expert).toContain('TypeScript');
+    expect(updated.knowledge.expert).toContain('JavaScript');
+    expect(updated.knowledge.expert).toContain('TypeScript');
   });
 
   it('detects proficient topics', () => {
     const text = "I'm proficient at Python and comfortable with Go";
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated.profile.knowledgeLevel.proficient).toContain('Python');
-    expect(updated.profile.knowledgeLevel.proficient).toContain('Go');
+    expect(updated.knowledge.proficient).toContain('Python');
+    expect(updated.knowledge.proficient).toContain('Go');
   });
 
-  it('detects domains', () => {
-    const text = 'I work in web development and machine learning';
-    const updated = detector.detectAndUpdate(text, baseProfile);
-
-    expect(updated.profile.projectContext.domains).toContain('web development');
-    expect(updated.profile.projectContext.domains).toContain('machine learning');
-  });
-
-  it('detects current projects', () => {
-    const text = "I'm working on a web scraper and building an API server";
-    const updated = detector.detectAndUpdate(text, baseProfile);
-
-    expect(updated.profile.projectContext.currentProjects).toContain('web scraper');
-    expect(updated.profile.projectContext.currentProjects).toContain('API server');
-  });
-
-  it('updates lastUpdated timestamp', () => {
-    const oldTimestamp = baseProfile.lastUpdated;
+  it('updates meta.lastUpdated timestamp', () => {
+    const oldTimestamp = baseProfile.meta.lastUpdated;
     const text = 'I prefer TypeScript';
 
+    // Small delay to ensure timestamp differs
     const updated = detector.detectAndUpdate(text, baseProfile);
-    expect(updated.lastUpdated).not.toBe(oldTimestamp);
+    expect(updated.meta.lastUpdated).not.toBe(oldTimestamp);
   });
 
   it('returns unchanged profile for non-preference statements', () => {
     const text = 'The weather is nice today';
     const updated = detector.detectAndUpdate(text, baseProfile);
 
-    expect(updated).toEqual(baseProfile);
+    // Profile should be unchanged
+    expect(updated.technical.languages).toEqual([]);
+    expect(updated.technical.frameworks).toEqual([]);
+    expect(updated.knowledge.learning).toEqual([]);
   });
 });

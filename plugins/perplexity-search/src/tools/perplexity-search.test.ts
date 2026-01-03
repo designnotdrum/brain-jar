@@ -9,7 +9,7 @@
 
 import { PerplexitySearchTool } from './perplexity-search';
 import { ProfileManager } from '../profile/manager';
-import { UserProfile } from '../types';
+import type { UserProfile } from '@brain-jar/core';
 
 // Create a shared mock create function
 const mockCreate = jest.fn();
@@ -26,6 +26,12 @@ jest.mock('@perplexity-ai/perplexity_ai', () => {
     }))
   };
 });
+
+// Mock @brain-jar/core to avoid Mem0 initialization
+jest.mock('@brain-jar/core', () => ({
+  loadConfig: jest.fn().mockReturnValue(null),
+  Mem0Client: jest.fn(),
+}));
 
 describe('PerplexitySearchTool', () => {
   let tool: PerplexitySearchTool;
@@ -88,33 +94,48 @@ describe('PerplexitySearchTool', () => {
 
   describe('search with profile context', () => {
     it('should enrich query with profile data when enabled', async () => {
+      const now = new Date().toISOString();
       const mockProfile: UserProfile = {
         version: '1.0.0',
-        lastUpdated: '2025-01-01T00:00:00.000Z',
-        lastRefresh: '2025-01-01T00:00:00.000Z',
-        profile: {
-          technicalPreferences: {
-            languages: ['TypeScript', 'Python'],
-            frameworks: ['React', 'Node.js'],
-            tools: ['VS Code', 'Git'],
-            patterns: ['functional programming']
+        identity: {
+          role: 'Developer',
+        },
+        technical: {
+          languages: ['TypeScript', 'Python'],
+          frameworks: ['React', 'Node.js'],
+          tools: ['VS Code', 'Git'],
+          editors: ['VS Code'],
+          patterns: ['functional programming'],
+          operatingSystems: [],
+        },
+        workingStyle: {
+          verbosity: 'detailed',
+          learningPace: 'adaptive',
+          communicationStyle: 'technical',
+          priorities: ['code quality', 'performance'],
+        },
+        knowledge: {
+          expert: ['JavaScript'],
+          proficient: ['TypeScript'],
+          learning: ['Rust'],
+          interests: [],
+        },
+        personal: {
+          interests: [],
+          goals: [],
+          context: [],
+        },
+        meta: {
+          onboardingComplete: true,
+          onboardingProgress: {
+            identity: true,
+            technical: true,
+            workingStyle: true,
+            personal: true,
           },
-          workingStyle: {
-            explanationPreference: 'detailed with examples',
-            communicationStyle: 'technical',
-            priorities: ['code quality', 'performance']
-          },
-          projectContext: {
-            domains: ['web development'],
-            currentProjects: ['API service'],
-            commonTasks: ['debugging', 'testing']
-          },
-          knowledgeLevel: {
-            expert: ['JavaScript'],
-            proficient: ['TypeScript'],
-            learning: ['Rust']
-          }
-        }
+          lastUpdated: now,
+          createdAt: now,
+        },
       };
 
       (mockProfileManager.load as any).mockResolvedValue(mockProfile);

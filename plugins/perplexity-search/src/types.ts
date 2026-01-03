@@ -1,47 +1,12 @@
 /**
  * Type definitions for the Perplexity Search Plugin.
  *
- * This file contains TypeScript interfaces for:
- * - User profile data stored in Claude Code's profile.json
- * - Perplexity API configuration and request/response types
- *
- * Used by:
- * - PerplexitySearchTool (src/index.ts): Main search tool implementation
- * - Profile manager (src/profileManager.ts): User profile operations
+ * Re-exports UserProfile from @brain-jar/core for schema compatibility
+ * across all brain-jar plugins.
  */
 
-/**
- * User profile structure stored in Claude Code's profile.json.
- * Contains technical preferences and context used to personalize search results.
- */
-export interface UserProfile {
-  version: string;
-  lastUpdated: string;
-  lastRefresh: string;
-  profile: {
-    technicalPreferences: {
-      languages: string[];
-      frameworks: string[];
-      tools: string[];
-      patterns: string[];
-    };
-    workingStyle: {
-      explanationPreference: string;
-      communicationStyle: string;
-      priorities: string[];
-    };
-    projectContext: {
-      domains: string[];
-      currentProjects: string[];
-      commonTasks: string[];
-    };
-    knowledgeLevel: {
-      expert: string[];
-      proficient: string[];
-      learning: string[];
-    };
-  };
-}
+// Re-export UserProfile from core for compatibility
+export { UserProfile } from '@brain-jar/core';
 
 /**
  * Configuration for Perplexity API client.

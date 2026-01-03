@@ -39,10 +39,9 @@ const stdio_js_1 = require("@modelcontextprotocol/sdk/server/stdio.js");
 const zod_1 = require("zod");
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
+const core_1 = require("@brain-jar/core");
 const local_store_1 = require("./local-store");
-const mem0_client_1 = require("./mem0-client");
 const summary_manager_1 = require("./summary-manager");
-const config_1 = require("./config");
 const profile_1 = require("./profile");
 const LOCAL_DB_PATH = path.join(os.homedir(), '.config', 'brain-jar', 'local.db');
 async function runSetup() {
@@ -62,12 +61,12 @@ async function runSetup() {
             return true;
         },
     });
-    (0, config_1.saveConfig)({
+    (0, core_1.saveConfig)({
         mem0_api_key: apiKey.trim(),
         default_scope: 'global',
         auto_summarize: true,
     });
-    console.log(`\n[OK] Configuration saved to ${(0, config_1.getConfigPath)()}`);
+    console.log(`\n[OK] Configuration saved to ${(0, core_1.getConfigPath)()}`);
     console.log('[OK] Ready to use shared-memory!\n');
 }
 async function main() {
@@ -77,13 +76,13 @@ async function main() {
         process.exit(0);
     }
     // Check configuration - but don't exit if missing, just note it
-    const configStatus = (0, config_1.checkConfig)();
+    const configStatus = (0, core_1.checkConfig)();
     const isConfigured = configStatus.status !== 'missing';
-    const config = isConfigured ? (0, config_1.loadConfig)() : null;
+    const config = isConfigured ? (0, core_1.loadConfig)() : null;
     // Local store works without Mem0 config
     const localStore = new local_store_1.LocalStore(LOCAL_DB_PATH);
     // Mem0 client only if configured
-    const mem0Client = config ? new mem0_client_1.Mem0Client(config.mem0_api_key) : null;
+    const mem0Client = config ? new core_1.Mem0Client(config.mem0_api_key) : null;
     // Profile manager and inference engine (always available)
     const profileManager = new profile_1.ProfileManager();
     const inferenceEngine = new profile_1.InferenceEngine();

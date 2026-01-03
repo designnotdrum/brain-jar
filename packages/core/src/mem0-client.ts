@@ -1,5 +1,9 @@
-import { Memory } from './types';
-import { UserProfile } from './profile/types';
+/**
+ * Mem0 client for brain-jar plugins.
+ * Provides unified access to Mem0 for memory and profile storage.
+ */
+
+import { Memory, ActivitySummary, UserProfile, ProfileSnapshot } from './types';
 
 // Mem0 SDK types (simplified)
 interface Mem0Memory {
@@ -25,24 +29,6 @@ interface Mem0AddResult {
   message?: string;
   memory?: string;
   metadata?: Record<string, unknown>;
-}
-
-// Profile snapshot stored in Mem0
-export interface ProfileSnapshot {
-  profile: UserProfile;
-  timestamp: string;
-  mem0Id?: string;
-}
-
-// Activity summary stored in Mem0
-export interface ActivitySummary {
-  content: string;
-  scope: string;
-  periodStart: string;
-  periodEnd: string;
-  memoryCount: number;
-  timestamp: string;
-  mem0Id?: string;
 }
 
 export class Mem0Client {
@@ -335,5 +321,53 @@ export class Mem0Client {
   async getLatestSummary(scope: string): Promise<ActivitySummary | null> {
     const summaries = await this.getSummaries(scope, undefined, 1);
     return summaries.length > 0 ? summaries[0] : null;
+  }
+
+  // --- Search Memory Storage (for perplexity-search) ---
+
+  /**
+   * Stores a search query and result summary.
+   */
+  async storeSearchResult(query: string, summary: string): Promise<string | null> {
+    try {
+      const content = `Searched: "${query}" - Found: ${summary}`;
+      const messages = [{ role: 'user', content }];
+      const result = await this.client.add(messages, {
+        user_id: this.userId,
+        metadata: {
+          type: 'search',
+          query,
+          scope: 'global',
+          timestamp: new Date().toISOString(),
+        },
+      });
+      const results = this.extractResults<Mem0AddResult>(result);
+      const firstResult = results[0];
+      return firstResult?.id || firstResult?.event_id || result?.id || result?.event_id || null;
+    } catch (error) {
+      console.warn('Failed to store search result:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Gets relevant context for a search query from past searches.
+   */
+  async getSearchContext(query: string, limit: number = 3): Promise<string[]> {
+    try {
+      const response = await this.client.search(query, {
+        user_id: this.userId,
+        limit,
+      });
+      const results: Mem0SearchResult[] = this.extractResults(response);
+
+      // Filter to search results and return content
+      return results
+        .filter((r) => r.metadata?.type === 'search')
+        .map((r) => r.memory);
+    } catch (error) {
+      console.warn('Failed to get search context:', error);
+      return [];
+    }
   }
 }

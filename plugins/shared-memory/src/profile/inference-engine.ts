@@ -7,7 +7,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { InferredPreference, UserProfile } from './types';
+import type { InferredPreference, UserProfile } from '@brain-jar/core';
 
 interface Pattern {
   regex: RegExp;

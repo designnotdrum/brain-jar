@@ -4,7 +4,7 @@
  * Returns InferredPreference objects that require user confirmation
  * before being added to the profile.
  */
-import { InferredPreference, UserProfile } from './types';
+import type { InferredPreference, UserProfile } from '@brain-jar/core';
 export declare class InferenceEngine {
     private textPatterns;
     /**

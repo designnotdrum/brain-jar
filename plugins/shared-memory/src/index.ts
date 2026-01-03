@@ -6,12 +6,19 @@ import { z } from 'zod';
 import * as path from 'path';
 import * as os from 'os';
 
+import {
+  Mem0Client,
+  checkConfig,
+  loadConfig,
+  saveConfig,
+  getMissingConfigMessage,
+  getConfigPath,
+  ProfileSection,
+} from '@brain-jar/core';
 import { LocalStore } from './local-store';
-import { Mem0Client } from './mem0-client';
 import { SummaryManager } from './summary-manager';
-import { checkConfig, loadConfig, saveConfig, getMissingConfigMessage, getConfigPath } from './config';
 import { AddMemoryInput, SearchMemoryInput, ListMemoriesInput } from './types';
-import { ProfileManager, InferenceEngine, ProfileSection } from './profile';
+import { ProfileManager, InferenceEngine } from './profile';
 
 const LOCAL_DB_PATH = path.join(os.homedir(), '.config', 'brain-jar', 'local.db');
 

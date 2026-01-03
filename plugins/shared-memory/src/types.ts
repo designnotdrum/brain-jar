@@ -1,16 +1,11 @@
-export interface Memory {
-  id: string;
-  content: string;
-  scope: string; // 'global' or 'project:<name>'
-  tags: string[];
-  source: {
-    agent: string;
-    action?: string;
-  };
-  created_at: Date;
-  updated_at: Date;
-}
+/**
+ * Re-export shared types from @brain-jar/core.
+ */
+export { Memory, ConfigStatus } from '@brain-jar/core';
 
+/**
+ * MCP tool input types (plugin-specific).
+ */
 export interface AddMemoryInput {
   content: string;
   scope?: string;
@@ -28,10 +23,4 @@ export interface ListMemoriesInput {
   tags?: string[];
   since?: string;
   limit?: number;
-}
-
-export interface ConfigStatus {
-  status: 'configured' | 'missing';
-  apiKey?: string;
-  configPath: string;
 }

@@ -22,10 +22,10 @@
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
+    "@brain-jar/core": "*",
     "@inquirer/prompts": "^8.1.0",
     "@modelcontextprotocol/sdk": "^1.25.1",
-    "better-sqlite3": "^12.5.0",
-    "mem0ai": "^2.2.0"
+    "better-sqlite3": "^12.5.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",

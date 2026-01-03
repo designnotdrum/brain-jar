@@ -10,9 +10,8 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
-import type { Mem0Client, ActivitySummary } from './mem0-client';
+import type { Mem0Client, ActivitySummary, Memory } from '@brain-jar/core';
 import type { LocalStore } from './local-store';
-import type { Memory } from './types';
 
 const STATE_PATH = path.join(os.homedir(), '.config', 'brain-jar', 'summary-state.json');
 

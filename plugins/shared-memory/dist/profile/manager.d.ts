@@ -8,8 +8,7 @@
  * to preserve raw JSON. This enables profile portability across machines
  * and historical analysis ("You, Wrapped").
  */
-import { UserProfile, OnboardingQuestion, InferredPreference } from './types';
-import type { Mem0Client, ProfileSnapshot } from '../mem0-client';
+import type { Mem0Client, UserProfile, ProfileSnapshot, OnboardingQuestion, InferredPreference } from '@brain-jar/core';
 declare const PROFILE_PATH: string;
 declare const INFERENCES_PATH: string;
 export declare class ProfileManager {

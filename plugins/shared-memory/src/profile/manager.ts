@@ -12,9 +12,8 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
-import { UserProfile, OnboardingQuestion, InferredPreference } from './types';
 import { randomUUID } from 'crypto';
-import type { Mem0Client, ProfileSnapshot } from '../mem0-client';
+import type { Mem0Client, UserProfile, ProfileSnapshot, OnboardingQuestion, InferredPreference } from '@brain-jar/core';
 
 const PROFILE_PATH = path.join(os.homedir(), '.config', 'brain-jar', 'user-profile.json');
 const INFERENCES_PATH = path.join(os.homedir(), '.config', 'brain-jar', 'pending-inferences.json');

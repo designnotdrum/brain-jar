@@ -1,39 +1,39 @@
 /**
- * ProfileManager - CRUD operations for user profiles.
+ * ProfileManager - Read-only access to shared brain-jar user profile.
  *
- * Responsibilities:
- * - Load profile from disk (creates default if missing)
- * - Save profile updates
- * - Check if profile needs refresh (>2 days since lastRefresh)
+ * The profile is managed by shared-memory plugin. This manager provides
+ * read-only access for perplexity-search to personalize queries.
+ *
+ * Profile location: ~/.config/brain-jar/user-profile.json
  */
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { UserProfile } from '../types';
+import type { UserProfile } from '@brain-jar/core';
 
 export class ProfileManager {
   constructor(private profilePath: string) {}
 
   /**
    * Loads user profile from disk.
-   * Creates default profile if none exists.
+   * Returns default profile if none exists.
    */
   async load(): Promise<UserProfile> {
     try {
       const data = await fs.readFile(this.profilePath, 'utf-8');
-      const profile = JSON.parse(data);
+      const profile = JSON.parse(data) as UserProfile;
       return profile;
     } catch (error) {
       const err = error as NodeJS.ErrnoException | SyntaxError;
 
-      // File doesn't exist - create default
+      // File doesn't exist - return default
       if ('code' in err && err.code === 'ENOENT') {
         return this.createDefaultProfile();
       }
 
-      // Corrupted JSON - log and create default
+      // Corrupted JSON - log and return default
       if (error instanceof SyntaxError) {
-        console.warn(`Profile file corrupted at ${this.profilePath}, creating default:`, error.message);
+        console.warn(`Profile file corrupted at ${this.profilePath}, using defaults:`, error.message);
         return this.createDefaultProfile();
       }
 
@@ -43,21 +43,15 @@ export class ProfileManager {
   }
 
   /**
-   * Saves profile to disk.
-   */
-  async save(profile: UserProfile): Promise<void> {
-    const dir = path.dirname(this.profilePath);
-    await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(this.profilePath, JSON.stringify(profile, null, 2));
-  }
-
-  /**
    * Checks if profile needs refresh.
-   * Returns true if more than 2 days since lastRefresh.
+   * Returns true if more than 2 days since lastUpdated.
    */
   async needsRefresh(): Promise<boolean> {
     const profile = await this.load();
-    const lastRefresh = new Date(profile.lastRefresh);
+    const lastUpdated = profile.meta?.lastUpdated;
+    if (!lastUpdated) return true;
+
+    const lastRefresh = new Date(lastUpdated);
     const now = new Date();
     const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
 
@@ -72,31 +66,42 @@ export class ProfileManager {
 
     return {
       version: '1.0.0',
-      lastUpdated: now,
-      lastRefresh: now,
-      profile: {
-        technicalPreferences: {
-          languages: [],
-          frameworks: [],
-          tools: [],
-          patterns: []
+      identity: {},
+      technical: {
+        languages: [],
+        frameworks: [],
+        tools: [],
+        editors: [],
+        patterns: [],
+        operatingSystems: [],
+      },
+      workingStyle: {
+        verbosity: 'adaptive',
+        learningPace: 'adaptive',
+        priorities: [],
+      },
+      knowledge: {
+        expert: [],
+        proficient: [],
+        learning: [],
+        interests: [],
+      },
+      personal: {
+        interests: [],
+        goals: [],
+        context: [],
+      },
+      meta: {
+        onboardingComplete: false,
+        onboardingProgress: {
+          identity: false,
+          technical: false,
+          workingStyle: false,
+          personal: false,
         },
-        workingStyle: {
-          explanationPreference: '',
-          communicationStyle: '',
-          priorities: []
-        },
-        projectContext: {
-          domains: [],
-          currentProjects: [],
-          commonTasks: []
-        },
-        knowledgeLevel: {
-          expert: [],
-          proficient: [],
-          learning: []
-        }
-      }
+        lastUpdated: now,
+        createdAt: now,
+      },
     };
   }
 }

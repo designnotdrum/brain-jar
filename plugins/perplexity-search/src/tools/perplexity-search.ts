@@ -4,21 +4,35 @@
  * Responsibilities:
  * - Perform searches via Perplexity API
  * - Optionally enrich queries with user profile context
+ * - Store search results in Mem0 (if configured)
+ * - Get relevant context from past searches
  * - Format results for MCP tool responses
  */
 
 import { Perplexity } from '@perplexity-ai/perplexity_ai';
+import { Mem0Client, loadConfig, type UserProfile } from '@brain-jar/core';
 import { ProfileManager } from '../profile/manager';
-import { PerplexitySearchParams, UserProfile } from '../types';
+import { PerplexitySearchParams } from '../types';
 
 export class PerplexitySearchTool {
   private client: any;
+  private mem0Client: Mem0Client | null = null;
 
   constructor(
     apiKey: string,
     private profileManager: ProfileManager
   ) {
     this.client = new Perplexity({ apiKey });
+
+    // Initialize Mem0 if brain-jar config exists
+    try {
+      const config = loadConfig();
+      if (config?.mem0_api_key) {
+        this.mem0Client = new Mem0Client(config.mem0_api_key);
+      }
+    } catch {
+      // No Mem0 config - search memory disabled
+    }
   }
 
   /**
@@ -32,7 +46,17 @@ export class PerplexitySearchTool {
       if (params.include_profile_context) {
         const profile = await this.profileManager.load();
         const contextString = this.buildContextString(profile);
-        query = `${params.query}\n\nUser context: ${contextString}`;
+        if (contextString) {
+          query = `${params.query}\n\nUser context: ${contextString}`;
+        }
+      }
+
+      // Get relevant context from past searches (if Mem0 configured)
+      if (this.mem0Client && params.include_profile_context) {
+        const searchContext = await this.mem0Client.getSearchContext(params.query, 3);
+        if (searchContext.length > 0) {
+          query += `\n\nRelevant past searches:\n${searchContext.join('\n')}`;
+        }
       }
 
       // Call Perplexity API
@@ -48,6 +72,14 @@ export class PerplexitySearchTool {
 
       // Extract content from response
       const content = response.choices[0].message.content;
+
+      // Store search result in Mem0 (non-blocking)
+      if (this.mem0Client) {
+        const summary = this.summarizeResult(content);
+        this.mem0Client.storeSearchResult(params.query, summary).catch((err) => {
+          console.error('[perplexity-search] Failed to store search result:', err);
+        });
+      }
 
       return {
         content: [
@@ -65,31 +97,47 @@ export class PerplexitySearchTool {
 
   /**
    * Builds a context string from user profile.
-   * Formats profile data into a concise string for query enrichment.
+   * Uses the correct UserProfile schema from @brain-jar/core.
    */
   private buildContextString(profile: UserProfile): string {
     const parts: string[] = [];
 
-    const { technicalPreferences, workingStyle, projectContext, knowledgeLevel } = profile.profile;
+    // Add identity context
+    if (profile.identity?.role) {
+      parts.push(`Role: ${profile.identity.role}`);
+    }
 
     // Add technical preferences
-    if (technicalPreferences.languages.length > 0) {
-      parts.push(`Languages: ${technicalPreferences.languages.join(', ')}`);
+    if (profile.technical?.languages?.length > 0) {
+      parts.push(`Languages: ${profile.technical.languages.join(', ')}`);
     }
-    if (technicalPreferences.frameworks.length > 0) {
-      parts.push(`Frameworks: ${technicalPreferences.frameworks.join(', ')}`);
+    if (profile.technical?.frameworks?.length > 0) {
+      parts.push(`Frameworks: ${profile.technical.frameworks.join(', ')}`);
     }
 
     // Add working style
-    if (workingStyle.explanationPreference) {
-      parts.push(`Explanation style: ${workingStyle.explanationPreference}`);
+    if (profile.workingStyle?.verbosity && profile.workingStyle.verbosity !== 'adaptive') {
+      parts.push(`Prefers ${profile.workingStyle.verbosity} explanations`);
     }
 
-    // Add project context
-    if (projectContext.domains.length > 0) {
-      parts.push(`Domains: ${projectContext.domains.join(', ')}`);
+    // Add knowledge level
+    if (profile.knowledge?.expert?.length > 0) {
+      parts.push(`Expert in: ${profile.knowledge.expert.join(', ')}`);
+    }
+    if (profile.knowledge?.learning?.length > 0) {
+      parts.push(`Currently learning: ${profile.knowledge.learning.join(', ')}`);
     }
 
     return parts.join('; ');
+  }
+
+  /**
+   * Summarizes search result for storage.
+   * Extracts first ~100 chars as summary.
+   */
+  private summarizeResult(content: string): string {
+    const cleaned = content.replace(/\n+/g, ' ').trim();
+    if (cleaned.length <= 100) return cleaned;
+    return cleaned.substring(0, 97) + '...';
   }
 }

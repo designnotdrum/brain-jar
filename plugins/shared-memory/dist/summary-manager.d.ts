@@ -6,7 +6,7 @@
  * - Time ceiling: Force summary after max interval if any activity
  * - Manual trigger: User can trigger via /summarize skill
  */
-import type { Mem0Client, ActivitySummary } from './mem0-client';
+import type { Mem0Client, ActivitySummary } from '@brain-jar/core';
 import type { LocalStore } from './local-store';
 export declare class SummaryManager {
     private mem0Client;

@@ -1,4 +1,4 @@
-import { Memory } from './types';
+import type { Memory } from '@brain-jar/core';
 export interface AddInput {
     content: string;
     scope: string;
