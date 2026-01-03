@@ -109,11 +109,11 @@ All plugins share the same user profile and memory infrastructure. Install share
 - **Skill-level adaptation** from beginner to expert
 - **OpenAPI/TypeScript output** from captured traffic
 
-### visual-thinking v0.1.1
+### visual-thinking v0.1.2
+- **Renamed /resume to /continue-diagram** to avoid Claude Code collision
 - **7 MCP tools** for diagram CRUD and export
 - **Mermaid diagrams** (mindmap, flowchart, sequence, ERD, etc.)
 - **Version history** tracks diagram evolution
-- **draw.io integration** via MCP server
 
 ### pattern-radar v0.1.1
 - **6 MCP tools** for trend scanning and pattern detection

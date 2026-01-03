@@ -1,5 +1,5 @@
 ---
-name: resume
+name: continue-diagram
 description: "Continue working on an existing diagram. Load, review, and modify persistent diagrams across sessions."
 allowed-tools:
   - mcp__visual-thinking__list_diagrams
@@ -10,7 +10,7 @@ allowed-tools:
   - mcp__visual-thinking__export_diagram
 ---
 
-# Resume a Diagram
+# Continue a Diagram
 
 Continue working on diagrams from previous sessions.
 

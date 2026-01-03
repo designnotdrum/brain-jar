@@ -60,7 +60,7 @@ Capture complex ideas as diagrams during conversations:
 - Adds rich context explaining what the diagram represents
 - Stores persistently for future sessions
 
-### `/visual-thinking:resume`
+### `/visual-thinking:continue-diagram`
 
 Continue working on existing diagrams:
 - Find diagrams by title or search
