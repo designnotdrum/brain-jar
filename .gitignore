@@ -5,6 +5,8 @@ plugins/*/node_modules/
 # Build output
 dist/
 plugins/*/dist/
+# Exception: commit shared-memory dist for zero-build install
+!plugins/shared-memory/dist/
 
 # Plugin packaging
 release/
@@ -24,4 +26,7 @@ worktrees/
 # IDE
 .idea/
 .vscode/
+
+# Claude Code local settings (but keep skills)
 .claude/
+!.claude/skills/
