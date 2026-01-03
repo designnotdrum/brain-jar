@@ -1,14 +1,17 @@
 import { HarParser } from '../parsers/har';
 import type { ParsedCapture } from '../parsers/types';
+import { getForensicsMemory, type Investigation, type Endpoint, type AuthPattern } from '../interop/index.js';
 
 export interface AnalyzeResult {
   format: 'har' | 'curl' | 'pcap' | 'unknown';
   parsed: ParsedCapture;
   formatted: string;
+  storedToInvestigation?: string; // Investigation ID if findings were stored
 }
 
 export class AnalyzeCaptureTool {
   private harParser: HarParser;
+  private memory = getForensicsMemory();
 
   constructor() {
     this.harParser = new HarParser();
@@ -19,11 +22,20 @@ export class AnalyzeCaptureTool {
 
     if (format === 'har') {
       const parsed = this.harParser.parse(content);
-      return {
+      const result: AnalyzeResult = {
         format,
         parsed,
         formatted: this.formatAnalysis(parsed),
       };
+
+      // Try to store findings to active investigation
+      const investigation = await this.storeFindings(parsed);
+      if (investigation) {
+        result.storedToInvestigation = investigation.id;
+        result.formatted += `\n\n*Findings stored to investigation: ${investigation.name}*`;
+      }
+
+      return result;
     }
 
     if (format === 'curl') {
@@ -31,6 +43,59 @@ export class AnalyzeCaptureTool {
     }
 
     throw new Error(`Unable to parse format: ${format}`);
+  }
+
+  /**
+   * Store findings to active investigation if one exists.
+   */
+  private async storeFindings(parsed: ParsedCapture): Promise<Investigation | null> {
+    if (!this.memory.isConfigured()) return null;
+
+    try {
+      const investigation = await this.memory.findResumableInvestigation();
+      if (!investigation || investigation.mode !== 'protocol') return null;
+
+      // Convert parsed endpoints to investigation endpoints
+      const endpoints: Endpoint[] = parsed.endpoints.map((ep) => ({
+        method: ep.method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+        path: ep.path,
+        queryParams: Object.keys(ep.queryParams).length > 0 ? ep.queryParams : undefined,
+        requestSchema: ep.requestBody,
+        responseSchema: ep.responseBody,
+        statusCodes: [ep.responseStatus],
+      }));
+
+      // Convert auth patterns
+      const auth: AuthPattern | undefined = parsed.authPatterns.length > 0
+        ? {
+            type: parsed.authPatterns[0].type as AuthPattern['type'],
+            location: parsed.authPatterns[0].location,
+            headerName: parsed.authPatterns[0].headerName,
+          }
+        : undefined;
+
+      // Merge findings with existing
+      investigation.findings = investigation.findings || {};
+      investigation.findings.endpoints = [
+        ...(investigation.findings.endpoints || []),
+        ...endpoints,
+      ];
+
+      if (auth && !investigation.findings.auth) {
+        investigation.findings.auth = auth;
+      }
+
+      // Mark capture complete in session state
+      investigation.sessionState = investigation.sessionState || {};
+      investigation.sessionState.hasCapture = true;
+      investigation.updated = new Date().toISOString();
+
+      await this.memory.saveInvestigation(investigation);
+      return investigation;
+    } catch (error) {
+      console.error('[forensics] Failed to store findings:', error);
+      return null;
+    }
   }
 
   detectFormat(content: string): 'har' | 'curl' | 'pcap' | 'unknown' {

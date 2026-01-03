@@ -12,11 +12,16 @@ import {
   SuggestNextStepTool,
   InvestigationContext,
 } from './tools/suggest-next-step.js';
+import { BuildSpecTool, BuildSpecOptions } from './tools/build-spec.js';
+import { InvestigationManager, StartInvestigationOptions } from './tools/investigation-manager.js';
+import { InvestigationMode, InvestigationStatus } from './interop/index.js';
 
 // Initialize tools
 const explainConceptTool = new ExplainConceptTool();
 const analyzeCaptureTool = new AnalyzeCaptureTool();
 const suggestNextStepTool = new SuggestNextStepTool();
+const buildSpecTool = new BuildSpecTool();
+const investigationManager = new InvestigationManager();
 
 async function main() {
   const server = new Server(
@@ -114,6 +119,91 @@ async function main() {
             required: ['mode'],
           },
         },
+        {
+          name: 'build_spec',
+          description:
+            'Generate an API specification from investigation findings. Outputs JSON, OpenAPI 3.0, or TypeScript client code.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Name for the API specification',
+              },
+              version: {
+                type: 'string',
+                description: 'Version string (default: 1.0.0)',
+              },
+              baseUrl: {
+                type: 'string',
+                description: 'Base URL for the API (inferred from endpoints if not provided)',
+              },
+              format: {
+                type: 'string',
+                enum: ['json', 'openapi', 'typescript'],
+                description: 'Output format (default: json)',
+              },
+              investigationId: {
+                type: 'string',
+                description: 'Investigation ID to build from (uses active investigation if not provided)',
+              },
+            },
+            required: ['name'],
+          },
+        },
+        {
+          name: 'start_investigation',
+          description:
+            'Start a new forensics investigation. Creates a persistent investigation that tracks findings across sessions.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Name for the investigation (e.g., "Spotify API", "Smart Lock Protocol")',
+              },
+              mode: {
+                type: 'string',
+                enum: ['protocol', 'feature', 'codebase', 'decision', 'format'],
+                description: 'Investigation mode',
+              },
+              target: {
+                type: 'string',
+                description: 'What is being investigated (e.g., device name, API name, codebase URL)',
+              },
+            },
+            required: ['name', 'mode'],
+          },
+        },
+        {
+          name: 'list_investigations',
+          description:
+            'List all forensics investigations, optionally filtered by status.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              status: {
+                type: 'string',
+                enum: ['active', 'paused', 'complete'],
+                description: 'Filter by status (omit for all)',
+              },
+            },
+          },
+        },
+        {
+          name: 'get_investigation',
+          description:
+            'Get details of the current active investigation or a specific investigation by ID.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                description: 'Investigation ID (omit to get current active investigation)',
+              },
+            },
+          },
+        },
       ],
     };
   });
@@ -173,7 +263,7 @@ async function main() {
 
       const context: InvestigationContext = {
         mode: args.mode,
-        skillLevel: args.skillLevel || 'beginner',
+        skillLevel: args.skillLevel, // Now optional, will use profile if not provided
         hasCapture: args.hasCapture,
         hasSpec: args.hasSpec,
         hasResearch: args.hasResearch,
@@ -181,16 +271,20 @@ async function main() {
         targetCodebase: args.targetCodebase,
       };
 
-      const result = suggestNextStepTool.suggest(context);
+      const result = await suggestNextStepTool.suggest(context);
 
       let response = `## Next Step: ${result.step}\n\n${result.explanation}`;
 
       if (result.commands && result.commands.length > 0) {
-        response += `\n\n**Commands:**\n${result.commands.map((cmd) => `- \`${cmd}\``).join('\n')}`;
+        response += `\n\n**Commands:**\n${result.commands.map((cmd: string) => `- \`${cmd}\``).join('\n')}`;
       }
 
       if (result.tips && result.tips.length > 0) {
-        response += `\n\n**Tips:**\n${result.tips.map((tip) => `- ${tip}`).join('\n')}`;
+        response += `\n\n**Tips:**\n${result.tips.map((tip: string) => `- ${tip}`).join('\n')}`;
+      }
+
+      if (result.userStack && (result.userStack.languages.length > 0 || result.userStack.frameworks.length > 0)) {
+        response += `\n\n*Your stack: ${[...result.userStack.languages, ...result.userStack.frameworks].join(', ')}*`;
       }
 
       return {
@@ -201,6 +295,166 @@ async function main() {
           },
         ],
       };
+    }
+
+    if (name === 'build_spec') {
+      const args = request.params.arguments as unknown as BuildSpecOptions;
+
+      try {
+        const result = await buildSpecTool.build(args);
+
+        let response = `## API Specification: ${result.spec.name}\n\n`;
+        response += `**Version:** ${result.spec.version}\n`;
+        response += `**Format:** ${result.outputFormat}\n`;
+        response += `**Endpoints:** ${result.spec.endpoints.length}\n`;
+
+        if (result.storedToMemory) {
+          response += `\n*Specification saved to memory*\n`;
+        }
+
+        response += `\n### Output\n\n\`\`\`${result.outputFormat === 'typescript' ? 'typescript' : 'json'}\n`;
+        response += result.formatted;
+        response += `\n\`\`\``;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: response,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error building spec: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === 'start_investigation') {
+      const args = request.params.arguments as unknown as StartInvestigationOptions;
+
+      try {
+        const investigation = await investigationManager.start(args);
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: investigationManager.formatInfo(investigation),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error starting investigation: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === 'list_investigations') {
+      const args = request.params.arguments as { status?: InvestigationStatus };
+
+      try {
+        const investigations = await investigationManager.list(args?.status);
+
+        if (investigations.length === 0) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'No investigations found. Use `start_investigation` to begin one.',
+              },
+            ],
+          };
+        }
+
+        const lines = ['## Investigations\n'];
+        for (const inv of investigations) {
+          const statusIcon = inv.status === 'active' ? '🔵' : inv.status === 'paused' ? '⏸️' : '✅';
+          lines.push(`${statusIcon} **${inv.name}** (${inv.mode})`);
+          lines.push(`   ID: ${inv.id}`);
+          lines.push(`   Updated: ${inv.updated}`);
+          if (inv.mode === 'protocol') {
+            lines.push(`   Endpoints: ${inv.endpointCount}, Auth: ${inv.hasAuth ? '✓' : '○'}, Spec: ${inv.hasSpec ? '✓' : '○'}`);
+          }
+          lines.push('');
+        }
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: lines.join('\n'),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error listing investigations: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+
+    if (name === 'get_investigation') {
+      const args = request.params.arguments as { id?: string };
+
+      try {
+        let investigation;
+        if (args?.id) {
+          investigation = await investigationManager.resume(args.id);
+        } else {
+          investigation = await investigationManager.getCurrent();
+        }
+
+        if (!investigation) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'No active investigation found. Use `start_investigation` to begin one.',
+              },
+            ],
+          };
+        }
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: investigationManager.formatInfo(investigation),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error getting investigation: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
     }
 
     throw new Error(`Unknown tool: ${name}`);

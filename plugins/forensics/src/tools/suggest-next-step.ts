@@ -1,6 +1,8 @@
+import { getForensicsMemory, type SkillLevel, type InvestigationMode } from '../interop/index.js';
+
 export interface InvestigationContext {
-  mode: 'protocol' | 'feature' | 'codebase' | 'decision' | 'format';
-  skillLevel: 'beginner' | 'intermediate' | 'advanced';
+  mode: InvestigationMode;
+  skillLevel?: SkillLevel; // Now optional, will use profile if not provided
   hasCapture?: boolean;
   hasSpec?: boolean;
   hasResearch?: boolean;
@@ -13,21 +15,77 @@ export interface NextStepSuggestion {
   explanation: string;
   commands?: string[];
   tips?: string[];
+  userStack?: { languages: string[]; frameworks: string[] }; // For implementation suggestions
 }
 
 export class SuggestNextStepTool {
-  suggest(context: InvestigationContext): NextStepSuggestion {
+  private memory = getForensicsMemory();
+
+  /**
+   * Suggest next step. Now async to fetch skill level from profile.
+   */
+  async suggest(context: InvestigationContext): Promise<NextStepSuggestion> {
+    // Get skill level from profile if not explicitly provided
+    const skillLevel = context.skillLevel || await this.memory.getSkillLevel();
+    const contextWithSkill = { ...context, skillLevel };
+
+    // Get user stack for implementation suggestions
+    const userStack = await this.memory.getUserStack();
+
+    let suggestion: NextStepSuggestion;
     switch (context.mode) {
       case 'protocol':
-        return this.suggestProtocolStep(context);
+        suggestion = this.suggestProtocolStep(contextWithSkill, userStack);
+        break;
       case 'feature':
-        return this.suggestFeatureStep(context);
+        suggestion = this.suggestFeatureStep(contextWithSkill);
+        break;
       case 'codebase':
-        return this.suggestCodebaseStep(context);
+        suggestion = this.suggestCodebaseStep(contextWithSkill);
+        break;
       case 'decision':
-        return this.suggestDecisionStep(context);
+        suggestion = this.suggestDecisionStep(contextWithSkill);
+        break;
       case 'format':
-        return this.suggestFormatStep(context);
+        suggestion = this.suggestFormatStep(contextWithSkill);
+        break;
+      default:
+        suggestion = {
+          step: 'Select a mode',
+          explanation: 'Choose an investigation mode to get started.',
+        };
+    }
+
+    // Include user stack in suggestion
+    if (userStack.languages.length > 0 || userStack.frameworks.length > 0) {
+      suggestion.userStack = userStack;
+    }
+
+    return suggestion;
+  }
+
+  /**
+   * Synchronous version for compatibility. Uses beginner as default skill level.
+   * @deprecated Use async suggest() instead
+   */
+  suggestSync(context: InvestigationContext): NextStepSuggestion {
+    // Default to beginner if skillLevel not provided
+    const contextWithSkill = {
+      ...context,
+      skillLevel: context.skillLevel || 'beginner' as SkillLevel,
+    };
+
+    switch (context.mode) {
+      case 'protocol':
+        return this.suggestProtocolStep(contextWithSkill);
+      case 'feature':
+        return this.suggestFeatureStep(contextWithSkill);
+      case 'codebase':
+        return this.suggestCodebaseStep(contextWithSkill);
+      case 'decision':
+        return this.suggestDecisionStep(contextWithSkill);
+      case 'format':
+        return this.suggestFormatStep(contextWithSkill);
       default:
         return {
           step: 'Select a mode',
@@ -36,7 +94,10 @@ export class SuggestNextStepTool {
     }
   }
 
-  private suggestProtocolStep(context: InvestigationContext): NextStepSuggestion {
+  private suggestProtocolStep(
+    context: InvestigationContext & { skillLevel: SkillLevel },
+    userStack?: { languages: string[]; frameworks: string[] }
+  ): NextStepSuggestion {
     const isVerbose = context.skillLevel === 'beginner';
 
     if (!context.hasCapture) {
@@ -79,11 +140,14 @@ export class SuggestNextStepTool {
       });
     }
 
+    // Tailor implementation advice to user's stack
+    const stackHint = this.getStackHint(userStack);
+
     return this.buildSuggestion({
       step: 'Implement the API client',
       explanationVerbose:
-        'With your API specification in hand, you can now implement a client that replicates the observed behavior. Start with authentication, then implement core endpoints, and add error handling based on observed error responses.',
-      explanationTerse: 'Build client starting with auth, then core endpoints.',
+        `With your API specification in hand, you can now implement a client that replicates the observed behavior. ${stackHint}Start with authentication, then implement core endpoints, and add error handling based on observed error responses.`,
+      explanationTerse: `Build client${stackHint ? ` in ${stackHint}` : ''} starting with auth, then core endpoints.`,
       commands: [
         'Create auth module matching observed flow',
         'Implement endpoints from your spec',
@@ -96,6 +160,20 @@ export class SuggestNextStepTool {
       ],
       isVerbose,
     });
+  }
+
+  private getStackHint(userStack?: { languages: string[]; frameworks: string[] }): string {
+    if (!userStack || (userStack.languages.length === 0 && userStack.frameworks.length === 0)) {
+      return '';
+    }
+    const parts: string[] = [];
+    if (userStack.languages.length > 0) {
+      parts.push(userStack.languages[0]); // Primary language
+    }
+    if (userStack.frameworks.length > 0) {
+      parts.push(userStack.frameworks[0]); // Primary framework
+    }
+    return parts.length > 0 ? `Based on your profile, I'd suggest ${parts.join(' with ')}. ` : '';
   }
 
   private suggestFeatureStep(context: InvestigationContext): NextStepSuggestion {
