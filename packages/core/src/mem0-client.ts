@@ -51,13 +51,22 @@ export class Mem0Client {
     return response?.results || [];
   }
 
-  async add(content: string, metadata: Record<string, unknown> = {}): Promise<string> {
+  async add(
+    content: string,
+    metadata: Record<string, unknown> = {},
+    options?: { agentId?: string }
+  ): Promise<string> {
     // v2 API: add() expects messages array as first param
     const messages = [{ role: 'user', content }];
-    const result = await this.client.add(messages, {
+    const addOptions: Record<string, unknown> = {
       user_id: this.userId,
       metadata,
-    });
+    };
+    // Add agent_id for partitioning if specified
+    if (options?.agentId) {
+      addOptions.agent_id = options.agentId;
+    }
+    const result = await this.client.add(messages, addOptions);
     // v2 returns array with event_id for async processing, or id for sync
     const results = this.extractResults<Mem0AddResult>(result);
     const firstResult = results[0];
@@ -65,12 +74,21 @@ export class Mem0Client {
     return firstResult?.id || firstResult?.event_id || result?.id || result?.event_id || '';
   }
 
-  async search(query: string, limit: number = 10): Promise<Memory[]> {
+  async search(
+    query: string,
+    limit: number = 10,
+    options?: { agentId?: string }
+  ): Promise<Memory[]> {
     // v2 API: search() uses user_id at top level
-    const response = await this.client.search(query, {
+    const searchOptions: Record<string, unknown> = {
       user_id: this.userId,
       limit,
-    });
+    };
+    // Add agent_id filter if specified
+    if (options?.agentId) {
+      searchOptions.agent_id = options.agentId;
+    }
+    const response = await this.client.search(query, searchOptions);
     const results: Mem0SearchResult[] = this.extractResults(response);
 
     return results.map((r) => ({
@@ -87,11 +105,16 @@ export class Mem0Client {
     }));
   }
 
-  async getAll(): Promise<Memory[]> {
+  async getAll(options?: { agentId?: string }): Promise<Memory[]> {
     // v2 API: getAll() uses user_id at top level
-    const response = await this.client.getAll({
+    const getAllOptions: Record<string, unknown> = {
       user_id: this.userId,
-    });
+    };
+    // Add agent_id filter if specified
+    if (options?.agentId) {
+      getAllOptions.agent_id = options.agentId;
+    }
+    const response = await this.client.getAll(getAllOptions);
     const results: Mem0Memory[] = this.extractResults(response);
 
     return results.map((r) => ({
@@ -118,6 +141,53 @@ export class Mem0Client {
   }
 
   // --- Profile Snapshot Methods ---
+  // Profile snapshots use agent_id: 'profile-mgr' to partition from regular memories
+
+  private static readonly PROFILE_AGENT_ID = 'profile-mgr';
+
+  /**
+   * Returns today's date as YYYY-MM-DD prefix for filtering snapshots.
+   */
+  private getTodayPrefix(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Gets all profile snapshots from today.
+   * Returns array of { id, timestamp } sorted oldest first.
+   */
+  private async getTodaysSnapshots(): Promise<Array<{ id: string; timestamp: string }>> {
+    try {
+      const todayPrefix = this.getTodayPrefix();
+      const response = await this.client.getAll({
+        user_id: this.userId,
+        agent_id: Mem0Client.PROFILE_AGENT_ID,
+      });
+      const results: Mem0Memory[] = this.extractResults(response);
+
+      // Filter to profile snapshots from today and extract id + timestamp
+      const todaysSnapshots = results
+        .filter((r) => r.metadata?.type === 'profile-snapshot')
+        .filter((r) => {
+          const timestamp = (r.metadata?.timestamp as string) || '';
+          return timestamp.startsWith(todayPrefix);
+        })
+        .map((r) => ({
+          id: r.id,
+          timestamp: (r.metadata?.timestamp as string) || '',
+        }))
+        .sort((a, b) => a.timestamp.localeCompare(b.timestamp)); // Oldest first
+
+      return todaysSnapshots;
+    } catch (error) {
+      console.warn('Failed to get today\'s snapshots:', error);
+      return [];
+    }
+  }
 
   /**
    * Gets the latest profile snapshot from Mem0.
@@ -127,6 +197,7 @@ export class Mem0Client {
     try {
       const response = await this.client.getAll({
         user_id: this.userId,
+        agent_id: Mem0Client.PROFILE_AGENT_ID,
       });
       const results: Mem0Memory[] = this.extractResults(response);
 
@@ -163,15 +234,26 @@ export class Mem0Client {
 
   /**
    * Saves a new profile snapshot to Mem0.
-   * Always creates a new memory (append-only).
+   * Uses agent_id 'profile-mgr' to partition from regular memories.
+   * Prunes any existing snapshots from today to ensure only one per day.
    */
   async saveProfileSnapshot(profile: UserProfile): Promise<string | null> {
     try {
+      // Prune existing snapshots from today (keep only one per day)
+      const todaysSnapshots = await this.getTodaysSnapshots();
+      if (todaysSnapshots.length > 0) {
+        // Delete all existing snapshots from today
+        for (const snapshot of todaysSnapshots) {
+          await this.delete(snapshot.id);
+        }
+      }
+
       const timestamp = new Date().toISOString();
       // v2 API: add() expects messages array
       const messages = [{ role: 'user', content: JSON.stringify(profile) }];
       const result = await this.client.add(messages, {
         user_id: this.userId,
+        agent_id: Mem0Client.PROFILE_AGENT_ID,
         infer: false, // Store raw JSON without semantic extraction
         metadata: {
           type: 'profile-snapshot',
@@ -197,6 +279,7 @@ export class Mem0Client {
     try {
       const response = await this.client.getAll({
         user_id: this.userId,
+        agent_id: Mem0Client.PROFILE_AGENT_ID,
       });
       const results: Mem0Memory[] = this.extractResults(response);
 
@@ -324,9 +407,13 @@ export class Mem0Client {
   }
 
   // --- Search Memory Storage (for perplexity-search) ---
+  // Search results use agent_id: 'perplexity' to partition from regular memories
+
+  private static readonly PERPLEXITY_AGENT_ID = 'perplexity';
 
   /**
    * Stores a search query and result summary.
+   * Uses agent_id 'perplexity' to partition from regular memories.
    */
   async storeSearchResult(query: string, summary: string): Promise<string | null> {
     try {
@@ -334,6 +421,7 @@ export class Mem0Client {
       const messages = [{ role: 'user', content }];
       const result = await this.client.add(messages, {
         user_id: this.userId,
+        agent_id: Mem0Client.PERPLEXITY_AGENT_ID,
         metadata: {
           type: 'search',
           query,
@@ -352,19 +440,19 @@ export class Mem0Client {
 
   /**
    * Gets relevant context for a search query from past searches.
+   * Searches within the perplexity partition only.
    */
   async getSearchContext(query: string, limit: number = 3): Promise<string[]> {
     try {
       const response = await this.client.search(query, {
         user_id: this.userId,
+        agent_id: Mem0Client.PERPLEXITY_AGENT_ID,
         limit,
       });
       const results: Mem0SearchResult[] = this.extractResults(response);
 
-      // Filter to search results and return content
-      return results
-        .filter((r) => r.metadata?.type === 'search')
-        .map((r) => r.memory);
+      // Return all search results from this partition
+      return results.map((r) => r.memory);
     } catch (error) {
       console.warn('Failed to get search context:', error);
       return [];
