@@ -4,6 +4,9 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { exec } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 
 import { Mem0Client, checkConfig, loadConfig } from '@brain-jar/core';
 import { DiagramStorage } from './storage';
@@ -27,6 +30,35 @@ const DIAGRAM_TYPES: DiagramType[] = [
   'other',
 ];
 
+// Hookify rule for brainstorm integration
+const HOOKIFY_RULE_NAME = 'hookify.visual-thinking-brainstorm.local.md';
+const HOOKIFY_RULE_CONTENT = `---
+name: visual-thinking-brainstorm
+enabled: true
+event: prompt
+pattern: \\b(architecture|workflow|wireflow|data\\s*flow|user\\s*journey|customer\\s*journey|state\\s*machine|states?\\s*and\\s*transitions|data\\s*model|ERD|schema|relationships|wireframe|mockup|UI\\s*design|screens?|diagram|visualize|draw\\s*(this|it|out)?|flow\\s*chart|sequence\\s*diagram|mind\\s*map)\\b
+---
+
+**Visual Thinking Available**
+
+The user is discussing something that could benefit from a diagram. Consider offering to capture it visually:
+
+"Want me to create a diagram for this? I can make a [flowchart/sequence diagram/mindmap/ERD] and open it in draw.io for you to edit."
+
+**When to offer:**
+- Architecture discussions → flowchart or sequence diagram
+- User journeys/flows → flowchart
+- Data models → ERD or class diagram
+- State machines → state diagram
+- Brainstorming/ideation → mindmap
+- UI discussions → mention draw.io has mockup shapes
+
+**How to create:**
+Use the \`create_diagram\` tool with appropriate type, then offer to export to draw.io.
+
+**Don't be pushy** - offer once per topic. If declined, continue without mentioning again.
+`;
+
 async function main(): Promise<void> {
   // Check configuration (shared with other brain-jar plugins)
   const configStatus = checkConfig();
@@ -46,7 +78,7 @@ async function main(): Promise<void> {
   // Create MCP server
   const server = new McpServer({
     name: 'visual-thinking',
-    version: '0.2.1',
+    version: '0.3.0',
   });
 
   // --- Diagram Tools ---
@@ -389,6 +421,97 @@ async function main(): Promise<void> {
           {
             type: 'text' as const,
             text: `Unknown format: ${args.format}`,
+          },
+        ],
+      };
+    }
+  );
+
+  // --- Brainstorm Integration Tools ---
+
+  server.tool(
+    'setup_brainstorm_integration',
+    'Install or manage the hookify rule that prompts you to offer diagrams during design discussions',
+    {
+      action: z.enum(['install', 'uninstall', 'status']).optional().describe('Action to perform (default: status)'),
+    },
+    async (args: { action?: 'install' | 'uninstall' | 'status' }) => {
+      const action = args.action || 'status';
+      const claudeDir = path.join(os.homedir(), '.claude');
+      const rulePath = path.join(claudeDir, HOOKIFY_RULE_NAME);
+
+      // Ensure .claude directory exists
+      if (!fs.existsSync(claudeDir)) {
+        fs.mkdirSync(claudeDir, { recursive: true });
+      }
+
+      const ruleExists = fs.existsSync(rulePath);
+
+      if (action === 'status') {
+        if (ruleExists) {
+          // Check if enabled
+          const content = fs.readFileSync(rulePath, 'utf-8');
+          const isEnabled = content.includes('enabled: true');
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Brainstorm integration is **installed** and **${isEnabled ? 'enabled' : 'disabled'}**.\n\nLocation: ${rulePath}\n\nThis hookify rule prompts you to offer diagrams when users discuss architecture, flows, data models, wireframes, etc.\n\nTo toggle, use: setup_brainstorm_integration with action "install" (enable) or "uninstall" (remove).`,
+              },
+            ],
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Brainstorm integration is **not installed**.\n\nWhen installed, this hookify rule will prompt you to offer diagrams when users discuss architecture, flows, data models, wireframes, etc.\n\nTo install, use: setup_brainstorm_integration with action "install".`,
+              },
+            ],
+          };
+        }
+      }
+
+      if (action === 'install') {
+        fs.writeFileSync(rulePath, HOOKIFY_RULE_CONTENT);
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `Brainstorm integration **installed**!\n\nLocation: ${rulePath}\n\nNow when users discuss architecture, flows, data models, wireframes, or other visual topics, you'll get a reminder to offer diagram creation.\n\n**Trigger keywords:** architecture, workflow, data flow, user journey, state machine, data model, ERD, wireframe, mockup, diagram, and more.\n\n**Example offer:** "Want me to create a diagram for this? I can make a flowchart and open it in draw.io for you to edit."`,
+            },
+          ],
+        };
+      }
+
+      if (action === 'uninstall') {
+        if (ruleExists) {
+          fs.unlinkSync(rulePath);
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Brainstorm integration **uninstalled**.\n\nThe hookify rule has been removed. You can reinstall anytime with: setup_brainstorm_integration with action "install".`,
+              },
+            ],
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Brainstorm integration was not installed.`,
+              },
+            ],
+          };
+        }
+      }
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: `Unknown action: ${action}`,
           },
         ],
       };

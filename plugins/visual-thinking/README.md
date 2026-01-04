@@ -50,6 +50,7 @@ Visual-thinking does three things:
 | `delete_diagram` | Remove a diagram |
 | `search_diagrams` | Find diagrams by text in title/context/content |
 | `export_diagram` | Export to Mermaid, SVG, or draw.io format |
+| `setup_brainstorm_integration` | Install hookify rule for auto-diagram prompts |
 
 ## Skills
 
@@ -66,6 +67,13 @@ Continue working on existing diagrams:
 - Find diagrams by title or search
 - View current state and version history
 - Modify and track changes over time
+
+### `/visual-thinking:setup-brainstorm-integration`
+
+Install automatic diagram prompts:
+- Adds hookify rule to detect design discussions
+- Claude offers to create diagrams when relevant
+- One-time setup, persists across sessions
 
 ## Diagram Types
 
@@ -105,6 +113,44 @@ Continue working on existing diagrams:
               │  + Cross-machine sync  │
               └────────────────────────┘
 ```
+
+## Automatic Diagram Suggestions
+
+Visual-thinking can prompt you to create diagrams when you discuss architecture, workflows, data models, and other visual topics.
+
+### Setup
+
+Use the `setup_brainstorm_integration` tool to install a hookify rule:
+
+```
+# Install the hookify rule
+setup_brainstorm_integration action: "install"
+
+# Check if installed
+setup_brainstorm_integration action: "status"
+
+# Remove when no longer wanted
+setup_brainstorm_integration action: "uninstall"
+```
+
+Or use the skill:
+```
+/visual-thinking:setup-brainstorm-integration
+```
+
+### How It Works
+
+After installation, when you mention keywords like:
+- Architecture, workflow, data flow
+- User journey, state machine
+- Data model, ERD, schema
+- Wireframe, mockup, diagram
+
+Claude will offer to capture your ideas as a diagram:
+
+> "Want me to create a diagram for this? I can make a flowchart and open it in draw.io for you to edit."
+
+The rule is stored at `~/.claude/hookify.visual-thinking-brainstorm.local.md`. To temporarily disable it, edit the file and set `enabled: false`.
 
 ## Integration with brain-jar
 

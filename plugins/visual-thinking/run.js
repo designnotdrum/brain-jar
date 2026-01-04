@@ -31,7 +31,13 @@ if (existsSync(bundlePath)) {
     });
     // Move node_modules to root for bundle to find
     if (existsSync(join(root, 'dist', 'node_modules'))) {
-      execSync('mv dist/node_modules .', { cwd: root });
+      // Merge into existing node_modules if present, otherwise move
+      if (existsSync(join(root, 'node_modules'))) {
+        execSync('cp -r dist/node_modules/* node_modules/', { cwd: root });
+        execSync('rm -rf dist/node_modules', { cwd: root });
+      } else {
+        execSync('mv dist/node_modules .', { cwd: root });
+      }
     }
   }
   require(bundlePath);

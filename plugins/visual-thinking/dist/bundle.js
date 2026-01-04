@@ -3223,8 +3223,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path3) {
-      let input = path3;
+    function removeDotSegments(path4) {
+      let input = path4;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3423,8 +3423,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path3, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path3 && path3 !== "/" ? path3 : void 0;
+        const [path4, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path4 && path4 !== "/" ? path4 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -6777,12 +6777,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs3, exportName) {
+    function addFormats(ajv, list, fs4, exportName) {
       var _a2;
       var _b;
       (_a2 = (_b = ajv.opts.code).formats) !== null && _a2 !== void 0 ? _a2 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs3[f]);
+        ajv.addFormat(f, fs4[f]);
     }
     module2.exports = exports2 = formatsPlugin;
     Object.defineProperty(exports2, "__esModule", { value: true });
@@ -15637,11 +15637,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path3) {
-      if (!path3 || typeof path3 !== "string") {
+    function lookup(path4) {
+      if (!path4 || typeof path4 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path3).toLowerCase().substr(1);
+      var extension2 = extname("x." + path4).toLowerCase().substr(1);
       if (!extension2) {
         return false;
       }
@@ -16746,11 +16746,11 @@ var require_form_data = __commonJS({
     "use strict";
     var CombinedStream = require_combined_stream();
     var util2 = require("util");
-    var path3 = require("path");
+    var path4 = require("path");
     var http = require("http");
     var https = require("https");
     var parseUrl = require("url").parse;
-    var fs3 = require("fs");
+    var fs4 = require("fs");
     var Stream = require("stream").Stream;
     var crypto = require("crypto");
     var mime = require_mime_types();
@@ -16817,7 +16817,7 @@ var require_form_data = __commonJS({
         if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
           callback(null, value.end + 1 - (value.start ? value.start : 0));
         } else {
-          fs3.stat(value.path, function(err, stat) {
+          fs4.stat(value.path, function(err, stat) {
             if (err) {
               callback(err);
               return;
@@ -16874,11 +16874,11 @@ var require_form_data = __commonJS({
     FormData2.prototype._getContentDisposition = function(value, options) {
       var filename;
       if (typeof options.filepath === "string") {
-        filename = path3.normalize(options.filepath).replace(/\\/g, "/");
+        filename = path4.normalize(options.filepath).replace(/\\/g, "/");
       } else if (options.filename || value && (value.name || value.path)) {
-        filename = path3.basename(options.filename || value && (value.name || value.path));
+        filename = path4.basename(options.filename || value && (value.name || value.path));
       } else if (value && value.readable && hasOwn(value, "httpVersion")) {
-        filename = path3.basename(value.client._httpMessage.path || "");
+        filename = path4.basename(value.client._httpMessage.path || "");
       }
       if (filename) {
         return 'filename="' + filename + '"';
@@ -17609,7 +17609,7 @@ var require_has_flag = __commonJS({
 var require_supports_color = __commonJS({
   "node_modules/supports-color/index.js"(exports2, module2) {
     "use strict";
-    var os3 = require("os");
+    var os4 = require("os");
     var tty = require("tty");
     var hasFlag = require_has_flag();
     var { env } = process;
@@ -17657,7 +17657,7 @@ var require_supports_color = __commonJS({
         return min;
       }
       if (process.platform === "win32") {
-        const osRelease = os3.release().split(".");
+        const osRelease = os4.release().split(".");
         if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
           return Number(osRelease[2]) >= 14931 ? 3 : 2;
         }
@@ -18893,9 +18893,9 @@ var require_axios = __commonJS({
     function removeBrackets(key) {
       return utils$1.endsWith(key, "[]") ? key.slice(0, -2) : key;
     }
-    function renderKey(path3, key, dots) {
-      if (!path3) return key;
-      return path3.concat(key).map(function each(token, i) {
+    function renderKey(path4, key, dots) {
+      if (!path4) return key;
+      return path4.concat(key).map(function each(token, i) {
         token = removeBrackets(token);
         return !dots && i ? "[" + token + "]" : token;
       }).join(dots ? "." : "");
@@ -18940,9 +18940,9 @@ var require_axios = __commonJS({
         }
         return value;
       }
-      function defaultVisitor(value, key, path3) {
+      function defaultVisitor(value, key, path4) {
         let arr = value;
-        if (value && !path3 && typeof value === "object") {
+        if (value && !path4 && typeof value === "object") {
           if (utils$1.endsWith(key, "{}")) {
             key = metaTokens ? key : key.slice(0, -2);
             value = JSON.stringify(value);
@@ -18961,7 +18961,7 @@ var require_axios = __commonJS({
         if (isVisitable(value)) {
           return true;
         }
-        formData.append(renderKey(path3, key, dots), convertValue(value));
+        formData.append(renderKey(path4, key, dots), convertValue(value));
         return false;
       }
       const stack = [];
@@ -18970,10 +18970,10 @@ var require_axios = __commonJS({
         convertValue,
         isVisitable
       });
-      function build(value, path3) {
+      function build(value, path4) {
         if (utils$1.isUndefined(value)) return;
         if (stack.indexOf(value) !== -1) {
-          throw Error("Circular reference detected in " + path3.join("."));
+          throw Error("Circular reference detected in " + path4.join("."));
         }
         stack.push(value);
         utils$1.forEach(value, function each(el, key) {
@@ -18981,11 +18981,11 @@ var require_axios = __commonJS({
             formData,
             el,
             utils$1.isString(key) ? key.trim() : key,
-            path3,
+            path4,
             exposedHelpers
           );
           if (result === true) {
-            build(el, path3 ? path3.concat(key) : [key]);
+            build(el, path4 ? path4.concat(key) : [key]);
           }
         });
         stack.pop();
@@ -19149,7 +19149,7 @@ var require_axios = __commonJS({
     };
     function toURLEncodedForm(data, options) {
       return toFormData(data, new platform.classes.URLSearchParams(), Object.assign({
-        visitor: function(value, key, path3, helpers) {
+        visitor: function(value, key, path4, helpers) {
           if (platform.isNode && utils$1.isBuffer(value)) {
             this.append(key, value.toString("base64"));
             return false;
@@ -19176,11 +19176,11 @@ var require_axios = __commonJS({
       return obj;
     }
     function formDataToJSON(formData) {
-      function buildPath(path3, value, target, index) {
-        let name = path3[index++];
+      function buildPath(path4, value, target, index) {
+        let name = path4[index++];
         if (name === "__proto__") return true;
         const isNumericKey = Number.isFinite(+name);
-        const isLast = index >= path3.length;
+        const isLast = index >= path4.length;
         name = !name && utils$1.isArray(target) ? target.length : name;
         if (isLast) {
           if (utils$1.hasOwnProp(target, name)) {
@@ -19193,7 +19193,7 @@ var require_axios = __commonJS({
         if (!target[name] || !utils$1.isObject(target[name])) {
           target[name] = [];
         }
-        const result = buildPath(path3, value, target[name], index);
+        const result = buildPath(path4, value, target[name], index);
         if (result && utils$1.isArray(target[name])) {
           target[name] = arrayToObject(target[name]);
         }
@@ -20251,9 +20251,9 @@ var require_axios = __commonJS({
           auth = urlUsername + ":" + urlPassword;
         }
         auth && headers.delete("authorization");
-        let path3;
+        let path4;
         try {
-          path3 = buildURL(
+          path4 = buildURL(
             parsed.pathname + parsed.search,
             config2.params,
             config2.paramsSerializer
@@ -20271,7 +20271,7 @@ var require_axios = __commonJS({
           false
         );
         const options = {
-          path: path3,
+          path: path4,
           method,
           headers: headers.toJSON(),
           agents: { http: config2.httpAgent, https: config2.httpsAgent },
@@ -20529,10 +20529,10 @@ var require_axios = __commonJS({
     var cookies = platform.hasStandardBrowserEnv ? (
       // Standard browser envs support document.cookie
       {
-        write(name, value, expires, path3, domain2, secure) {
+        write(name, value, expires, path4, domain2, secure) {
           const cookie = [name + "=" + encodeURIComponent(value)];
           utils$1.isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
-          utils$1.isString(path3) && cookie.push("path=" + path3);
+          utils$1.isString(path4) && cookie.push("path=" + path4);
           utils$1.isString(domain2) && cookie.push("domain=" + domain2);
           secure === true && cookie.push("secure");
           document.cookie = cookie.join("; ");
@@ -22649,8 +22649,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path3, errorMaps, issueData } = params;
-  const fullPath = [...path3, ...issueData.path || []];
+  const { data, path: path4, errorMaps, issueData } = params;
+  const fullPath = [...path4, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -22765,11 +22765,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path3, key) {
+  constructor(parent, value, path4, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path3;
+    this._path = path4;
     this._key = key;
   }
   get path() {
@@ -26692,10 +26692,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path3) {
-  if (!path3)
+function getElementAtPath(obj, path4) {
+  if (!path4)
     return obj;
-  return path3.reduce((acc, key) => acc?.[key], obj);
+  return path4.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -27078,11 +27078,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path3, issues) {
+function prefixIssues(path4, issues) {
   return issues.map((iss) => {
     var _a2;
     (_a2 = iss).path ?? (_a2.path = []);
-    iss.path.unshift(path3);
+    iss.path.unshift(path4);
     return iss;
   });
 }
@@ -27265,7 +27265,7 @@ function formatError(error48, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error48, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error49, path3 = []) => {
+  const processError = (error49, path4 = []) => {
     var _a2, _b;
     for (const issue2 of error49.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
@@ -27275,7 +27275,7 @@ function treeifyError(error48, mapper = (issue2) => issue2.message) {
       } else if (issue2.code === "invalid_element") {
         processError({ issues: issue2.issues }, issue2.path);
       } else {
-        const fullpath = [...path3, ...issue2.path];
+        const fullpath = [...path4, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -27307,8 +27307,8 @@ function treeifyError(error48, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path3 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path3) {
+  const path4 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path4) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -39714,13 +39714,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path3 = ref.slice(1).split("/").filter(Boolean);
-  if (path3.length === 0) {
+  const path4 = ref.slice(1).split("/").filter(Boolean);
+  if (path4.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path3[0] === defsKey) {
-    const key = path3[1];
+  if (path4[0] === defsKey) {
+    const key = path4[1];
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -45429,6 +45429,9 @@ var StdioServerTransport = class {
 
 // plugins/visual-thinking/src/index.ts
 var import_child_process = require("child_process");
+var fs3 = __toESM(require("fs"));
+var path3 = __toESM(require("path"));
+var os3 = __toESM(require("os"));
 
 // packages/core/src/config.ts
 var fs = __toESM(require("fs"));
@@ -46032,6 +46035,33 @@ var DIAGRAM_TYPES = [
   "gantt",
   "other"
 ];
+var HOOKIFY_RULE_NAME = "hookify.visual-thinking-brainstorm.local.md";
+var HOOKIFY_RULE_CONTENT = `---
+name: visual-thinking-brainstorm
+enabled: true
+event: prompt
+pattern: \\b(architecture|workflow|wireflow|data\\s*flow|user\\s*journey|customer\\s*journey|state\\s*machine|states?\\s*and\\s*transitions|data\\s*model|ERD|schema|relationships|wireframe|mockup|UI\\s*design|screens?|diagram|visualize|draw\\s*(this|it|out)?|flow\\s*chart|sequence\\s*diagram|mind\\s*map)\\b
+---
+
+**Visual Thinking Available**
+
+The user is discussing something that could benefit from a diagram. Consider offering to capture it visually:
+
+"Want me to create a diagram for this? I can make a [flowchart/sequence diagram/mindmap/ERD] and open it in draw.io for you to edit."
+
+**When to offer:**
+- Architecture discussions \u2192 flowchart or sequence diagram
+- User journeys/flows \u2192 flowchart
+- Data models \u2192 ERD or class diagram
+- State machines \u2192 state diagram
+- Brainstorming/ideation \u2192 mindmap
+- UI discussions \u2192 mention draw.io has mockup shapes
+
+**How to create:**
+Use the \`create_diagram\` tool with appropriate type, then offer to export to draw.io.
+
+**Don't be pushy** - offer once per topic. If declined, continue without mentioning again.
+`;
 async function main() {
   const configStatus = checkConfig();
   const isConfigured = configStatus.status !== "missing";
@@ -46043,7 +46073,7 @@ async function main() {
   }
   const server = new McpServer({
     name: "visual-thinking",
-    version: "0.2.1"
+    version: "0.3.0"
   });
   server.tool(
     "create_diagram",
@@ -46406,6 +46436,106 @@ The diagram will open in your browser and be converted to editable shapes.`
           {
             type: "text",
             text: `Unknown format: ${args.format}`
+          }
+        ]
+      };
+    }
+  );
+  server.tool(
+    "setup_brainstorm_integration",
+    "Install or manage the hookify rule that prompts you to offer diagrams during design discussions",
+    {
+      action: external_exports3.enum(["install", "uninstall", "status"]).optional().describe("Action to perform (default: status)")
+    },
+    async (args) => {
+      const action = args.action || "status";
+      const claudeDir = path3.join(os3.homedir(), ".claude");
+      const rulePath = path3.join(claudeDir, HOOKIFY_RULE_NAME);
+      if (!fs3.existsSync(claudeDir)) {
+        fs3.mkdirSync(claudeDir, { recursive: true });
+      }
+      const ruleExists = fs3.existsSync(rulePath);
+      if (action === "status") {
+        if (ruleExists) {
+          const content = fs3.readFileSync(rulePath, "utf-8");
+          const isEnabled = content.includes("enabled: true");
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Brainstorm integration is **installed** and **${isEnabled ? "enabled" : "disabled"}**.
+
+Location: ${rulePath}
+
+This hookify rule prompts you to offer diagrams when users discuss architecture, flows, data models, wireframes, etc.
+
+To toggle, use: setup_brainstorm_integration with action "install" (enable) or "uninstall" (remove).`
+              }
+            ]
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Brainstorm integration is **not installed**.
+
+When installed, this hookify rule will prompt you to offer diagrams when users discuss architecture, flows, data models, wireframes, etc.
+
+To install, use: setup_brainstorm_integration with action "install".`
+              }
+            ]
+          };
+        }
+      }
+      if (action === "install") {
+        fs3.writeFileSync(rulePath, HOOKIFY_RULE_CONTENT);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Brainstorm integration **installed**!
+
+Location: ${rulePath}
+
+Now when users discuss architecture, flows, data models, wireframes, or other visual topics, you'll get a reminder to offer diagram creation.
+
+**Trigger keywords:** architecture, workflow, data flow, user journey, state machine, data model, ERD, wireframe, mockup, diagram, and more.
+
+**Example offer:** "Want me to create a diagram for this? I can make a flowchart and open it in draw.io for you to edit."`
+            }
+          ]
+        };
+      }
+      if (action === "uninstall") {
+        if (ruleExists) {
+          fs3.unlinkSync(rulePath);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Brainstorm integration **uninstalled**.
+
+The hookify rule has been removed. You can reinstall anytime with: setup_brainstorm_integration with action "install".`
+              }
+            ]
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Brainstorm integration was not installed.`
+              }
+            ]
+          };
+        }
+      }
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Unknown action: ${action}`
           }
         ]
       };
