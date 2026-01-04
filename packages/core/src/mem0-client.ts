@@ -147,13 +147,10 @@ export class Mem0Client {
 
   /**
    * Returns today's date as YYYY-MM-DD prefix for filtering snapshots.
+   * Uses UTC to match timestamps stored via toISOString().
    */
   private getTodayPrefix(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return new Date().toISOString().substring(0, 10);
   }
 
   /**
@@ -241,11 +238,8 @@ export class Mem0Client {
     try {
       // Prune existing snapshots from today (keep only one per day)
       const todaysSnapshots = await this.getTodaysSnapshots();
-      if (todaysSnapshots.length > 0) {
-        // Delete all existing snapshots from today
-        for (const snapshot of todaysSnapshots) {
-          await this.delete(snapshot.id);
-        }
+      for (const snapshot of todaysSnapshots) {
+        await this.delete(snapshot.id);
       }
 
       const timestamp = new Date().toISOString();
