@@ -1,4 +1,58 @@
 /**
+ * Quality tier from quick scan
+ */
+export type SignalTier = 'verified' | 'unverified' | 'dead';
+
+/**
+ * Quick scan result (attached to Signal during digest)
+ */
+export interface QuickScanResult {
+  tier: SignalTier;
+  engagement: {
+    points: number;
+    comments: number;
+    passesThreshold: boolean;
+  };
+  age: {
+    days: number;
+    isStale: boolean;
+  };
+}
+
+/**
+ * Site health check result
+ */
+export interface SiteHealthResult {
+  status: number | null;
+  isLive: boolean;
+  checkedAt: string;
+}
+
+/**
+ * Product signal detection result
+ */
+export interface ProductSignalsResult {
+  method: 'heuristics' | 'perplexity' | 'both';
+  isProduct: boolean | null;
+  confidence: 'high' | 'medium' | 'low';
+  signals: string[];
+  redFlags: string[];
+}
+
+/**
+ * Deep validation result (on-demand)
+ */
+export interface ValidationResult {
+  siteHealth: SiteHealthResult;
+  recency: {
+    isStale: boolean;
+    daysSincePost: number;
+  };
+  productSignals: ProductSignalsResult;
+  overallVerdict: 'verified' | 'caution' | 'dead';
+}
+
+/**
  * A signal from a source (HN story, GitHub repo, etc.)
  */
 export interface Signal {
@@ -10,6 +64,8 @@ export interface Signal {
   score: number;
   timestamp: string;
   metadata: Record<string, unknown>;
+  quickScan?: QuickScanResult;
+  validation?: ValidationResult;
 }
 
 /**
