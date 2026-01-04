@@ -1,75 +1,115 @@
 ---
-name: digest
-description: "Get your personalized trend briefing based on profile domains."
-allowed-tools:
-  - mcp__pattern-radar__get_radar_digest
-  - mcp__pattern-radar__get_intersections
-  - mcp__pattern-radar__suggest_actions
+name: pattern-radar:digest
+description: Get your personalized trend briefing based on profile domains.
 ---
 
-# Radar Digest
+# Personalized Trend Digest (Subagent-Driven)
 
-Get a personalized briefing of trends relevant to your expertise.
+This skill dispatches a Haiku subagent to generate your personalized trend briefing. Main context receives a curated narrative; subagent does the analysis.
 
-## When to Use
-
-- Daily/weekly check-in on your domains
-- Finding opportunities at the intersection of your skills
-- Getting actionable suggestions based on trends
-
-## Get Your Digest
+## Architecture
 
 ```
-get_radar_digest()
+You (Opus) → Dispatch Haiku subagent → Subagent calls radar tools → Returns narrative
+           ← Personalized briefing   ← Raw signals processed
 ```
 
-Or specify timeframe:
+## How to Use
+
+When user asks for trends, digest, or wants to know what's happening:
+
+**Step 1: Dispatch Digest Subagent**
+
 ```
-get_radar_digest(timeframe: "daily")
-get_radar_digest(timeframe: "weekly")
-```
+Use Task tool:
+- subagent_type: "general-purpose"
+- model: "haiku"
+- prompt: "You are a personalized trend analyst. Generate a trend briefing for the user.
 
-## What You Get
+STEPS:
+1. Call get_radar_digest() to fetch signals from HN and GitHub
+2. Call get_intersections() to find domain overlaps
+3. Call suggest_actions(focus: 'all') for actionable recommendations
 
-1. **Relevant Patterns** — Trends that match your profile domains
-2. **Actionable Suggestions** — What to learn, build, or explore
-3. **Other Trending** — General trends outside your domains
+OUTPUT FORMAT:
+Return a 300-400 word personalized briefing with these sections:
 
-## Domain Intersections
+## 🎯 Relevant to You
+[2-3 patterns directly matching user's domains, with why they matter]
 
-Find where multiple of your domains overlap:
-```
-get_intersections()
-```
+## 🌟 Wildcards (Serendipity)
+[1-2 interesting signals OUTSIDE user's usual domains - unexpected discoveries]
 
-Example: If your domains include "TypeScript" and "AI", this finds signals relevant to both.
+## 💡 Suggested Actions
+[2-3 specific actions: something to learn, something to build, something to explore]
 
-## Action-Focused
-
-Get specific suggestions:
-```
-suggest_actions()                    # All types
-suggest_actions(focus: "learn")      # Learning opportunities
-suggest_actions(focus: "build")      # Build opportunities
-suggest_actions(focus: "explore")    # Exploration ideas
-```
-
-## Profile Integration
-
-Digest quality depends on your profile. Install shared-memory and populate:
-- **technical.languages**: Programming languages you know
-- **technical.frameworks**: Frameworks you use
-- **knowledge.domains**: Your expertise areas
-- **knowledge.interests**: Topics you're curious about
-
-Or configure domains directly:
-```
-configure_sources(domains: ["TypeScript", "AI", "distributed systems"])
+Keep it conversational and actionable. Include specific links where helpful."
 ```
 
-## Making It Routine
+**Step 2: Present the Briefing**
 
-Consider adding to your workflow:
-- Morning: `get_radar_digest(timeframe: "daily")`
-- Monday: `get_radar_digest(timeframe: "weekly")`
-- When exploring: `get_intersections()`
+Tell the user the subagent's narrative. Don't dump raw signal lists.
+
+## Serendipity Mode (Default)
+
+**IMPORTANT:** Always include the Wildcards section. The whole point of pattern-radar is surfacing unexpected connections.
+
+If user explicitly asks for "focused mode" or "only my domains":
+- Skip the Wildcards section
+- Mention: "I've filtered to just your domains. Say 'full digest' to include wildcards."
+
+## Quick Scan (Direct)
+
+For quick topic scans, use tools directly (no subagent needed):
+
+```
+scan_trends(topic: "WebAssembly")
+```
+
+This returns raw signals - useful when user wants to explore a specific topic themselves.
+
+## Configuration
+
+Help users configure their radar:
+
+```
+configure_sources(domains: ["TypeScript", "AI", "distributed-systems"])
+```
+
+Or for source weights:
+```
+configure_sources(hackernews_weight: 1.5, github_weight: 1.0)
+```
+
+## Example Flow
+
+```
+User: What's trending that I should know about?
+
+You: Let me generate your personalized trend digest...
+[Dispatch Haiku subagent]
+
+Subagent returns:
+## 🎯 Relevant to You
+**Edge Runtime Performance** is heating up - 3 HN discussions and 2 trending repos
+about V8 isolates and cold start optimization. Given your TypeScript + serverless
+background, this could affect your Lambda work.
+
+**AI Code Review Tools** are seeing a surge. GitHub Copilot competitors like
+Cursor and Continue are trending. Worth watching for your code-review plugin work.
+
+## 🌟 Wildcards
+**Game Engine Renaissance** - Godot 4.3 just dropped and HN is buzzing. Not your
+usual domain, but the architectural patterns (ECS, hot-reload) might inspire
+plugin design.
+
+## 💡 Suggested Actions
+- **Learn:** Read the Cloudflare Workers V8 isolate blog post (linked in signals)
+- **Build:** Try adding AI-assisted review to your code-review plugin
+- **Explore:** Check out Godot's plugin architecture for inspiration
+
+User: Just show me AI stuff, skip the wildcards
+
+You: [Call scan_trends directly]
+Here are the AI-specific signals...
+```
