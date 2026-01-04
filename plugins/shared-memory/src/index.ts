@@ -107,7 +107,7 @@ async function main(): Promise<void> {
   // Create MCP server
   const server = new McpServer({
     name: 'shared-memory',
-    version: '2.1.0',
+    version: '2.1.1',
   });
 
   // Register tools

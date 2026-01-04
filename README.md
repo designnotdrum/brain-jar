@@ -92,7 +92,7 @@ All plugins share the same user profile and memory infrastructure. Install share
 
 ## Highlights
 
-### shared-memory v2.1.0
+### shared-memory v2.1.1
 - **Entity partitioning** isolates profile snapshots and search queries from regular memories
 - **Profile pruning** keeps one snapshot per day, with automatic migration
 - **Custom Mem0 instructions** filter what gets stored (with user override)
