@@ -42,6 +42,7 @@ export interface Investigation {
   name: string;
   mode: InvestigationMode;
   status: InvestigationStatus;
+  scope: string; // "global" or "project:<name>" - auto-detected from cwd
   created: string;
   updated: string;
   target?: string; // What we're investigating (device, feature, codebase)

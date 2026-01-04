@@ -27,7 +27,7 @@ async function main() {
   const server = new Server(
     {
       name: 'forensics',
-      version: '0.3.0',
+      version: '0.4.0',
     },
     {
       capabilities: {

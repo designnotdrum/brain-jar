@@ -2981,7 +2981,7 @@ var require_compile = __commonJS({
       const schOrFunc = root.refs[ref];
       if (schOrFunc)
         return schOrFunc;
-      let _sch = resolve.call(this, root, ref);
+      let _sch = resolve2.call(this, root, ref);
       if (_sch === void 0) {
         const schema = (_a2 = root.localRefs) === null || _a2 === void 0 ? void 0 : _a2[ref];
         const { schemaId } = this.opts;
@@ -3008,7 +3008,7 @@ var require_compile = __commonJS({
     function sameSchemaEnv(s1, s2) {
       return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
     }
-    function resolve(root, ref) {
+    function resolve2(root, ref) {
       let sch;
       while (typeof (sch = this.refs[ref]) == "string")
         ref = sch;
@@ -3223,8 +3223,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path5) {
-      let input = path5;
+    function removeDotSegments(path6) {
+      let input = path6;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3423,8 +3423,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path5, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path5 && path5 !== "/" ? path5 : void 0;
+        const [path6, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path6 && path6 !== "/" ? path6 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -3576,24 +3576,24 @@ var require_fast_uri = __commonJS({
     function normalize(uri, options) {
       if (typeof uri === "string") {
         uri = /** @type {T} */
-        serialize(parse3(uri, options), options);
+        serialize(parse4(uri, options), options);
       } else if (typeof uri === "object") {
         uri = /** @type {T} */
-        parse3(serialize(uri, options), options);
+        parse4(serialize(uri, options), options);
       }
       return uri;
     }
-    function resolve(baseURI, relativeURI, options) {
+    function resolve2(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
-      const resolved = resolveComponent(parse3(baseURI, schemelessOptions), parse3(relativeURI, schemelessOptions), schemelessOptions, true);
+      const resolved = resolveComponent(parse4(baseURI, schemelessOptions), parse4(relativeURI, schemelessOptions), schemelessOptions, true);
       schemelessOptions.skipEscape = true;
       return serialize(resolved, schemelessOptions);
     }
     function resolveComponent(base, relative, options, skipNormalization) {
       const target = {};
       if (!skipNormalization) {
-        base = parse3(serialize(base, options), options);
-        relative = parse3(serialize(relative, options), options);
+        base = parse4(serialize(base, options), options);
+        relative = parse4(serialize(relative, options), options);
       }
       options = options || {};
       if (!options.tolerant && relative.scheme) {
@@ -3645,13 +3645,13 @@ var require_fast_uri = __commonJS({
     function equal(uriA, uriB, options) {
       if (typeof uriA === "string") {
         uriA = unescape(uriA);
-        uriA = serialize(normalizeComponentEncoding(parse3(uriA, options), true), { ...options, skipEscape: true });
+        uriA = serialize(normalizeComponentEncoding(parse4(uriA, options), true), { ...options, skipEscape: true });
       } else if (typeof uriA === "object") {
         uriA = serialize(normalizeComponentEncoding(uriA, true), { ...options, skipEscape: true });
       }
       if (typeof uriB === "string") {
         uriB = unescape(uriB);
-        uriB = serialize(normalizeComponentEncoding(parse3(uriB, options), true), { ...options, skipEscape: true });
+        uriB = serialize(normalizeComponentEncoding(parse4(uriB, options), true), { ...options, skipEscape: true });
       } else if (typeof uriB === "object") {
         uriB = serialize(normalizeComponentEncoding(uriB, true), { ...options, skipEscape: true });
       }
@@ -3720,7 +3720,7 @@ var require_fast_uri = __commonJS({
       return uriTokens.join("");
     }
     var URI_PARSE = /^(?:([^#/:?]+):)?(?:\/\/((?:([^#/?@]*)@)?(\[[^#/?\]]+\]|[^#/:?]*)(?::(\d*))?))?([^#?]*)(?:\?([^#]*))?(?:#((?:.|[\n\r])*))?/u;
-    function parse3(uri, opts) {
+    function parse4(uri, opts) {
       const options = Object.assign({}, opts);
       const parsed = {
         scheme: void 0,
@@ -3810,11 +3810,11 @@ var require_fast_uri = __commonJS({
     var fastUri = {
       SCHEMES,
       normalize,
-      resolve,
+      resolve: resolve2,
       resolveComponent,
       equal,
       serialize,
-      parse: parse3
+      parse: parse4
     };
     module2.exports = fastUri;
     module2.exports.default = fastUri;
@@ -6777,12 +6777,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs5, exportName) {
+    function addFormats(ajv, list, fs6, exportName) {
       var _a2;
       var _b;
       (_a2 = (_b = ajv.opts.code).formats) !== null && _a2 !== void 0 ? _a2 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs5[f]);
+        ajv.addFormat(f, fs6[f]);
     }
     module2.exports = exports2 = formatsPlugin;
     Object.defineProperty(exports2, "__esModule", { value: true });
@@ -15637,11 +15637,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path5) {
-      if (!path5 || typeof path5 !== "string") {
+    function lookup(path6) {
+      if (!path6 || typeof path6 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path5).toLowerCase().substr(1);
+      var extension2 = extname("x." + path6).toLowerCase().substr(1);
       if (!extension2) {
         return false;
       }
@@ -16746,11 +16746,11 @@ var require_form_data = __commonJS({
     "use strict";
     var CombinedStream = require_combined_stream();
     var util2 = require("util");
-    var path5 = require("path");
+    var path6 = require("path");
     var http = require("http");
     var https = require("https");
     var parseUrl = require("url").parse;
-    var fs5 = require("fs");
+    var fs6 = require("fs");
     var Stream = require("stream").Stream;
     var crypto = require("crypto");
     var mime = require_mime_types();
@@ -16817,7 +16817,7 @@ var require_form_data = __commonJS({
         if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
           callback(null, value.end + 1 - (value.start ? value.start : 0));
         } else {
-          fs5.stat(value.path, function(err, stat) {
+          fs6.stat(value.path, function(err, stat) {
             if (err) {
               callback(err);
               return;
@@ -16874,11 +16874,11 @@ var require_form_data = __commonJS({
     FormData2.prototype._getContentDisposition = function(value, options) {
       var filename;
       if (typeof options.filepath === "string") {
-        filename = path5.normalize(options.filepath).replace(/\\/g, "/");
+        filename = path6.normalize(options.filepath).replace(/\\/g, "/");
       } else if (options.filename || value && (value.name || value.path)) {
-        filename = path5.basename(options.filename || value && (value.name || value.path));
+        filename = path6.basename(options.filename || value && (value.name || value.path));
       } else if (value && value.readable && hasOwn(value, "httpVersion")) {
-        filename = path5.basename(value.client._httpMessage.path || "");
+        filename = path6.basename(value.client._httpMessage.path || "");
       }
       if (filename) {
         return 'filename="' + filename + '"';
@@ -17142,7 +17142,7 @@ var require_ms = __commonJS({
       options = options || {};
       var type = typeof val;
       if (type === "string" && val.length > 0) {
-        return parse3(val);
+        return parse4(val);
       } else if (type === "number" && isFinite(val)) {
         return options.long ? fmtLong(val) : fmtShort(val);
       }
@@ -17150,7 +17150,7 @@ var require_ms = __commonJS({
         "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
       );
     };
-    function parse3(str) {
+    function parse4(str) {
       str = String(str);
       if (str.length > 100) {
         return;
@@ -18893,9 +18893,9 @@ var require_axios = __commonJS({
     function removeBrackets(key) {
       return utils$1.endsWith(key, "[]") ? key.slice(0, -2) : key;
     }
-    function renderKey(path5, key, dots) {
-      if (!path5) return key;
-      return path5.concat(key).map(function each(token, i) {
+    function renderKey(path6, key, dots) {
+      if (!path6) return key;
+      return path6.concat(key).map(function each(token, i) {
         token = removeBrackets(token);
         return !dots && i ? "[" + token + "]" : token;
       }).join(dots ? "." : "");
@@ -18940,9 +18940,9 @@ var require_axios = __commonJS({
         }
         return value;
       }
-      function defaultVisitor(value, key, path5) {
+      function defaultVisitor(value, key, path6) {
         let arr = value;
-        if (value && !path5 && typeof value === "object") {
+        if (value && !path6 && typeof value === "object") {
           if (utils$1.endsWith(key, "{}")) {
             key = metaTokens ? key : key.slice(0, -2);
             value = JSON.stringify(value);
@@ -18961,7 +18961,7 @@ var require_axios = __commonJS({
         if (isVisitable(value)) {
           return true;
         }
-        formData.append(renderKey(path5, key, dots), convertValue(value));
+        formData.append(renderKey(path6, key, dots), convertValue(value));
         return false;
       }
       const stack = [];
@@ -18970,10 +18970,10 @@ var require_axios = __commonJS({
         convertValue,
         isVisitable
       });
-      function build(value, path5) {
+      function build(value, path6) {
         if (utils$1.isUndefined(value)) return;
         if (stack.indexOf(value) !== -1) {
-          throw Error("Circular reference detected in " + path5.join("."));
+          throw Error("Circular reference detected in " + path6.join("."));
         }
         stack.push(value);
         utils$1.forEach(value, function each(el, key) {
@@ -18981,11 +18981,11 @@ var require_axios = __commonJS({
             formData,
             el,
             utils$1.isString(key) ? key.trim() : key,
-            path5,
+            path6,
             exposedHelpers
           );
           if (result === true) {
-            build(el, path5 ? path5.concat(key) : [key]);
+            build(el, path6 ? path6.concat(key) : [key]);
           }
         });
         stack.pop();
@@ -19149,7 +19149,7 @@ var require_axios = __commonJS({
     };
     function toURLEncodedForm(data, options) {
       return toFormData(data, new platform.classes.URLSearchParams(), Object.assign({
-        visitor: function(value, key, path5, helpers) {
+        visitor: function(value, key, path6, helpers) {
           if (platform.isNode && utils$1.isBuffer(value)) {
             this.append(key, value.toString("base64"));
             return false;
@@ -19176,11 +19176,11 @@ var require_axios = __commonJS({
       return obj;
     }
     function formDataToJSON(formData) {
-      function buildPath(path5, value, target, index) {
-        let name = path5[index++];
+      function buildPath(path6, value, target, index) {
+        let name = path6[index++];
         if (name === "__proto__") return true;
         const isNumericKey = Number.isFinite(+name);
-        const isLast = index >= path5.length;
+        const isLast = index >= path6.length;
         name = !name && utils$1.isArray(target) ? target.length : name;
         if (isLast) {
           if (utils$1.hasOwnProp(target, name)) {
@@ -19193,7 +19193,7 @@ var require_axios = __commonJS({
         if (!target[name] || !utils$1.isObject(target[name])) {
           target[name] = [];
         }
-        const result = buildPath(path5, value, target[name], index);
+        const result = buildPath(path6, value, target[name], index);
         if (result && utils$1.isArray(target[name])) {
           target[name] = arrayToObject(target[name]);
         }
@@ -19598,10 +19598,10 @@ var require_axios = __commonJS({
     utils$1.inherits(CanceledError, AxiosError, {
       __CANCEL__: true
     });
-    function settle(resolve, reject, response) {
+    function settle(resolve2, reject, response) {
       const validateStatus = response.config.validateStatus;
       if (!response.status || !validateStatus || validateStatus(response.status)) {
-        resolve(response);
+        resolve2(response);
       } else {
         reject(new AxiosError(
           "Request failed with status code " + response.status,
@@ -20049,7 +20049,7 @@ var require_axios = __commonJS({
     }
     var isHttpAdapterSupported = typeof process !== "undefined" && utils$1.kindOf(process) === "process";
     var wrapAsync = (asyncExecutor) => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve2, reject) => {
         let onDone;
         let isDone;
         const done = (value, isRejected) => {
@@ -20059,7 +20059,7 @@ var require_axios = __commonJS({
         };
         const _resolve = (value) => {
           done(value);
-          resolve(value);
+          resolve2(value);
         };
         const _reject = (reason) => {
           done(reason, true);
@@ -20079,7 +20079,7 @@ var require_axios = __commonJS({
     };
     var buildAddressEntry = (address, family) => resolveFamily(utils$1.isObject(address) ? address : { address, family });
     var httpAdapter = isHttpAdapterSupported && function httpAdapter2(config2) {
-      return wrapAsync(async function dispatchHttpRequest(resolve, reject, onDone) {
+      return wrapAsync(async function dispatchHttpRequest(resolve2, reject, onDone) {
         let { data, lookup, family } = config2;
         const { responseType, responseEncoding } = config2;
         const method = config2.method.toUpperCase();
@@ -20131,7 +20131,7 @@ var require_axios = __commonJS({
         if (protocol === "data:") {
           let convertedData;
           if (method !== "GET") {
-            return settle(resolve, reject, {
+            return settle(resolve2, reject, {
               status: 405,
               statusText: "method not allowed",
               headers: {},
@@ -20153,7 +20153,7 @@ var require_axios = __commonJS({
           } else if (responseType === "stream") {
             convertedData = stream__default["default"].Readable.from(convertedData);
           }
-          return settle(resolve, reject, {
+          return settle(resolve2, reject, {
             data: convertedData,
             status: 200,
             statusText: "OK",
@@ -20251,9 +20251,9 @@ var require_axios = __commonJS({
           auth = urlUsername + ":" + urlPassword;
         }
         auth && headers.delete("authorization");
-        let path5;
+        let path6;
         try {
-          path5 = buildURL(
+          path6 = buildURL(
             parsed.pathname + parsed.search,
             config2.params,
             config2.paramsSerializer
@@ -20271,7 +20271,7 @@ var require_axios = __commonJS({
           false
         );
         const options = {
-          path: path5,
+          path: path6,
           method,
           headers: headers.toJSON(),
           agents: { http: config2.httpAgent, https: config2.httpsAgent },
@@ -20371,7 +20371,7 @@ var require_axios = __commonJS({
           };
           if (responseType === "stream") {
             response.data = responseStream;
-            settle(resolve, reject, response);
+            settle(resolve2, reject, response);
           } else {
             const responseBuffer = [];
             let totalResponseBytes = 0;
@@ -20419,7 +20419,7 @@ var require_axios = __commonJS({
               } catch (err) {
                 return reject(AxiosError.from(err, null, config2, response.request, response));
               }
-              settle(resolve, reject, response);
+              settle(resolve2, reject, response);
             });
           }
           emitter.once("abort", (err) => {
@@ -20529,10 +20529,10 @@ var require_axios = __commonJS({
     var cookies = platform.hasStandardBrowserEnv ? (
       // Standard browser envs support document.cookie
       {
-        write(name, value, expires, path5, domain2, secure) {
+        write(name, value, expires, path6, domain2, secure) {
           const cookie = [name + "=" + encodeURIComponent(value)];
           utils$1.isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
-          utils$1.isString(path5) && cookie.push("path=" + path5);
+          utils$1.isString(path6) && cookie.push("path=" + path6);
           utils$1.isString(domain2) && cookie.push("domain=" + domain2);
           secure === true && cookie.push("secure");
           document.cookie = cookie.join("; ");
@@ -20668,7 +20668,7 @@ var require_axios = __commonJS({
     };
     var isXHRAdapterSupported = typeof XMLHttpRequest !== "undefined";
     var xhrAdapter = isXHRAdapterSupported && function(config2) {
-      return new Promise(function dispatchXhrRequest(resolve, reject) {
+      return new Promise(function dispatchXhrRequest(resolve2, reject) {
         const _config = resolveConfig(config2);
         let requestData = _config.data;
         const requestHeaders = AxiosHeaders$1.from(_config.headers).normalize();
@@ -20702,7 +20702,7 @@ var require_axios = __commonJS({
             request
           };
           settle(function _resolve(value) {
-            resolve(value);
+            resolve2(value);
             done();
           }, function _reject(err) {
             reject(err);
@@ -21039,8 +21039,8 @@ var require_axios = __commonJS({
         responseType = responseType || "text";
         let responseData = await resolvers[utils$1.findKey(resolvers, responseType) || "text"](response, config2);
         !isStreamResponse && unsubscribe && unsubscribe();
-        return await new Promise((resolve, reject) => {
-          settle(resolve, reject, {
+        return await new Promise((resolve2, reject) => {
+          settle(resolve2, reject, {
             data: responseData,
             headers: AxiosHeaders$1.from(response.headers),
             status: response.status,
@@ -21380,8 +21380,8 @@ var require_axios = __commonJS({
           throw new TypeError("executor must be a function.");
         }
         let resolvePromise;
-        this.promise = new Promise(function promiseExecutor(resolve) {
-          resolvePromise = resolve;
+        this.promise = new Promise(function promiseExecutor(resolve2) {
+          resolvePromise = resolve2;
         });
         const token = this;
         this.promise.then((cancel) => {
@@ -21394,9 +21394,9 @@ var require_axios = __commonJS({
         });
         this.promise.then = (onfulfilled) => {
           let _resolve;
-          const promise2 = new Promise((resolve) => {
-            token.subscribe(resolve);
-            _resolve = resolve;
+          const promise2 = new Promise((resolve2) => {
+            token.subscribe(resolve2);
+            _resolve = resolve2;
           }).then(onfulfilled);
           promise2.cancel = function reject() {
             token.unsubscribe(_resolve);
@@ -22649,8 +22649,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path5, errorMaps, issueData } = params;
-  const fullPath = [...path5, ...issueData.path || []];
+  const { data, path: path6, errorMaps, issueData } = params;
+  const fullPath = [...path6, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -22765,11 +22765,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path5, key) {
+  constructor(parent, value, path6, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path5;
+    this._path = path6;
     this._key = key;
   }
   get path() {
@@ -26692,10 +26692,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path5) {
-  if (!path5)
+function getElementAtPath(obj, path6) {
+  if (!path6)
     return obj;
-  return path5.reduce((acc, key) => acc?.[key], obj);
+  return path6.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -27078,11 +27078,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path5, issues) {
+function prefixIssues(path6, issues) {
   return issues.map((iss) => {
     var _a2;
     (_a2 = iss).path ?? (_a2.path = []);
-    iss.path.unshift(path5);
+    iss.path.unshift(path6);
     return iss;
   });
 }
@@ -27265,7 +27265,7 @@ function formatError(error48, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error48, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error49, path5 = []) => {
+  const processError = (error49, path6 = []) => {
     var _a2, _b;
     for (const issue2 of error49.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
@@ -27275,7 +27275,7 @@ function treeifyError(error48, mapper = (issue2) => issue2.message) {
       } else if (issue2.code === "invalid_element") {
         processError({ issues: issue2.issues }, issue2.path);
       } else {
-        const fullpath = [...path5, ...issue2.path];
+        const fullpath = [...path6, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -27307,8 +27307,8 @@ function treeifyError(error48, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path5 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path5) {
+  const path6 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path6) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -39714,13 +39714,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path5 = ref.slice(1).split("/").filter(Boolean);
-  if (path5.length === 0) {
+  const path6 = ref.slice(1).split("/").filter(Boolean);
+  if (path6.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path5[0] === defsKey) {
-    const key = path5[1];
+  if (path6[0] === defsKey) {
+    const key = path6[1];
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -43453,7 +43453,7 @@ var Protocol = class {
           return;
         }
         const pollInterval = task2.pollInterval ?? this._options?.defaultTaskPollInterval ?? 1e3;
-        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        await new Promise((resolve2) => setTimeout(resolve2, pollInterval));
         options?.signal?.throwIfAborted();
       }
     } catch (error48) {
@@ -43470,7 +43470,7 @@ var Protocol = class {
    */
   request(request, resultSchema, options) {
     const { relatedRequestId, resumptionToken, onresumptiontoken, task, relatedTask } = options ?? {};
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       const earlyReject = (error48) => {
         reject(error48);
       };
@@ -43548,7 +43548,7 @@ var Protocol = class {
           if (!parseResult.success) {
             reject(parseResult.error);
           } else {
-            resolve(parseResult.data);
+            resolve2(parseResult.data);
           }
         } catch (error48) {
           reject(error48);
@@ -43809,12 +43809,12 @@ var Protocol = class {
       }
     } catch {
     }
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       if (signal.aborted) {
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
         return;
       }
-      const timeoutId = setTimeout(resolve, interval);
+      const timeoutId = setTimeout(resolve2, interval);
       signal.addEventListener("abort", () => {
         clearTimeout(timeoutId);
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
@@ -44773,7 +44773,7 @@ var McpServer = class {
     let task = createTaskResult.task;
     const pollInterval = task.pollInterval ?? 5e3;
     while (task.status !== "completed" && task.status !== "failed" && task.status !== "cancelled") {
-      await new Promise((resolve) => setTimeout(resolve, pollInterval));
+      await new Promise((resolve2) => setTimeout(resolve2, pollInterval));
       const updatedTask = await extra.taskStore.getTask(taskId);
       if (!updatedTask) {
         throw new McpError(ErrorCode.InternalError, `Task ${taskId} not found during polling`);
@@ -45416,12 +45416,12 @@ var StdioServerTransport = class {
     this.onclose?.();
   }
   send(message) {
-    return new Promise((resolve) => {
+    return new Promise((resolve2) => {
       const json2 = serializeMessage(message);
       if (this._stdout.write(json2)) {
-        resolve();
+        resolve2();
       } else {
-        this._stdout.once("drain", resolve);
+        this._stdout.once("drain", resolve2);
       }
     });
   }
@@ -45429,8 +45429,8 @@ var StdioServerTransport = class {
 
 // plugins/visual-thinking/src/index.ts
 var import_child_process = require("child_process");
-var fs4 = __toESM(require("fs"));
-var path4 = __toESM(require("path"));
+var fs5 = __toESM(require("fs"));
+var path5 = __toESM(require("path"));
 var os4 = __toESM(require("os"));
 
 // packages/core/src/config.ts
@@ -45886,11 +45886,123 @@ var Mem0Client = class _Mem0Client {
   }
 };
 
+// packages/core/src/scope.ts
+var fs3 = __toESM(require("fs"));
+var path3 = __toESM(require("path"));
+function findGitRoot(startDir) {
+  let dir = path3.resolve(startDir);
+  const root = path3.parse(dir).root;
+  while (dir !== root) {
+    if (fs3.existsSync(path3.join(dir, ".git"))) {
+      return dir;
+    }
+    dir = path3.dirname(dir);
+  }
+  return null;
+}
+function tryExtractName(dir, marker) {
+  const filePath = path3.join(dir, marker.file);
+  if (!fs3.existsSync(filePath)) {
+    return void 0;
+  }
+  try {
+    const content = fs3.readFileSync(filePath, "utf-8");
+    return marker.extract(content);
+  } catch {
+    return void 0;
+  }
+}
+function parseTomlName(content, section, key) {
+  const sectionRegex = new RegExp(`\\[${section}\\]([\\s\\S]*?)(?=\\n\\[|$)`, "m");
+  const sectionMatch = content.match(sectionRegex);
+  if (!sectionMatch) {
+    return void 0;
+  }
+  const sectionContent = sectionMatch[1];
+  const keyRegex = new RegExp(`^\\s*${key}\\s*=\\s*["']([^"']+)["']`, "m");
+  const keyMatch = sectionContent.match(keyRegex);
+  return keyMatch?.[1];
+}
+var PROJECT_MARKERS = [
+  {
+    file: "package.json",
+    extract: (content) => {
+      try {
+        const pkg = JSON.parse(content);
+        if (pkg.name && pkg.name !== "undefined" && !pkg.name.startsWith("@types/")) {
+          return pkg.name;
+        }
+      } catch {
+      }
+      return void 0;
+    }
+  },
+  {
+    file: "Cargo.toml",
+    extract: (content) => {
+      return parseTomlName(content, "package", "name");
+    }
+  },
+  {
+    file: "pyproject.toml",
+    extract: (content) => {
+      return parseTomlName(content, "project", "name") || parseTomlName(content, "tool.poetry", "name");
+    }
+  },
+  {
+    file: "go.mod",
+    extract: (content) => {
+      const match = content.match(/^module\s+(\S+)/m);
+      if (match) {
+        const parts = match[1].split("/");
+        return parts[parts.length - 1];
+      }
+      return void 0;
+    }
+  }
+];
+function detectScope(cwd) {
+  const result = detectScopeWithDetails(cwd);
+  return result.scope;
+}
+function detectScopeWithDetails(cwd) {
+  const dir = cwd || process.cwd();
+  const gitRoot = findGitRoot(dir);
+  const searchDir = gitRoot || dir;
+  for (const marker of PROJECT_MARKERS) {
+    const name = tryExtractName(searchDir, marker);
+    if (name) {
+      return {
+        scope: `project:${sanitizeProjectName(name)}`,
+        projectName: name,
+        gitRoot: gitRoot || void 0,
+        source: marker.file
+      };
+    }
+  }
+  if (gitRoot) {
+    const dirName = path3.basename(gitRoot);
+    return {
+      scope: `project:${sanitizeProjectName(dirName)}`,
+      projectName: dirName,
+      gitRoot,
+      source: "git"
+    };
+  }
+  return {
+    scope: "global",
+    source: "none"
+  };
+}
+function sanitizeProjectName(name) {
+  return name.toLowerCase().replace(/^@/, "").replace(/\//g, "-").replace(/[^a-z0-9-_.]/g, "").replace(/^-+|-+$/g, "");
+}
+
 // plugins/visual-thinking/src/storage.ts
 var import_better_sqlite3 = __toESM(require("better-sqlite3"));
-var path3 = __toESM(require("path"));
+var path4 = __toESM(require("path"));
 var os3 = __toESM(require("os"));
-var fs3 = __toESM(require("fs"));
+var fs4 = __toESM(require("fs"));
 
 // plugins/visual-thinking/node_modules/uuid/dist/esm/stringify.js
 var byteToHex = [];
@@ -45944,14 +46056,14 @@ function v4(options, buf, offset) {
 var v4_default = v4;
 
 // plugins/visual-thinking/src/storage.ts
-var DIAGRAMS_DIR = path3.join(os3.homedir(), ".config", "brain-jar", "diagrams");
-var DB_PATH = path3.join(DIAGRAMS_DIR, "diagrams.db");
+var DIAGRAMS_DIR = path4.join(os3.homedir(), ".config", "brain-jar", "diagrams");
+var DB_PATH = path4.join(DIAGRAMS_DIR, "diagrams.db");
 var DiagramStorage = class {
   db;
   constructor(dbPath = DB_PATH) {
-    const dir = path3.dirname(dbPath);
-    if (!fs3.existsSync(dir)) {
-      fs3.mkdirSync(dir, { recursive: true });
+    const dir = path4.dirname(dbPath);
+    if (!fs4.existsSync(dir)) {
+      fs4.mkdirSync(dir, { recursive: true });
     }
     this.db = new import_better_sqlite3.default(dbPath);
     this.initSchema();
@@ -45996,7 +46108,7 @@ var DiagramStorage = class {
   create(input) {
     const id = v4_default();
     const now = (/* @__PURE__ */ new Date()).toISOString();
-    const scope = input.scope || "global";
+    const scope = input.scope || detectScope();
     const tags = input.tags || [];
     const versions = [];
     const stmt = this.db.prepare(`
@@ -46579,15 +46691,15 @@ The diagram will open in your browser and be converted to editable shapes.`
     },
     async (args) => {
       const action = args.action || "status";
-      const claudeDir = path4.join(os4.homedir(), ".claude");
-      const rulePath = path4.join(claudeDir, HOOKIFY_RULE_NAME);
-      if (!fs4.existsSync(claudeDir)) {
-        fs4.mkdirSync(claudeDir, { recursive: true });
+      const claudeDir = path5.join(os4.homedir(), ".claude");
+      const rulePath = path5.join(claudeDir, HOOKIFY_RULE_NAME);
+      if (!fs5.existsSync(claudeDir)) {
+        fs5.mkdirSync(claudeDir, { recursive: true });
       }
-      const ruleExists = fs4.existsSync(rulePath);
+      const ruleExists = fs5.existsSync(rulePath);
       if (action === "status") {
         if (ruleExists) {
-          const content = fs4.readFileSync(rulePath, "utf-8");
+          const content = fs5.readFileSync(rulePath, "utf-8");
           const isEnabled = content.includes("enabled: true");
           return {
             content: [
@@ -46619,7 +46731,7 @@ To install, use: setup_brainstorm_integration with action "install".`
         }
       }
       if (action === "install") {
-        fs4.writeFileSync(rulePath, HOOKIFY_RULE_CONTENT);
+        fs5.writeFileSync(rulePath, HOOKIFY_RULE_CONTENT);
         return {
           content: [
             {
@@ -46639,7 +46751,7 @@ Now when users discuss architecture, flows, data models, wireframes, or other vi
       }
       if (action === "uninstall") {
         if (ruleExists) {
-          fs4.unlinkSync(rulePath);
+          fs5.unlinkSync(rulePath);
           return {
             content: [
               {

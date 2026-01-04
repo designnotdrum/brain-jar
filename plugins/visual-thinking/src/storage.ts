@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import { detectScope } from '@brain-jar/core';
 import {
   Diagram,
   DiagramRow,
@@ -75,7 +76,7 @@ export class DiagramStorage {
   create(input: CreateDiagramInput): Diagram {
     const id = uuidv4();
     const now = new Date().toISOString();
-    const scope = input.scope || 'global';
+    const scope = input.scope || detectScope();
     const tags = input.tags || [];
 
     // Initial version is empty - current state is always mermaid field

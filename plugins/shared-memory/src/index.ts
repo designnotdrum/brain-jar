@@ -14,6 +14,7 @@ import {
   getMissingConfigMessage,
   getConfigPath,
   ProfileSection,
+  detectScope,
 } from '@brain-jar/core';
 import { LocalStore } from './local-store';
 import { SummaryManager } from './summary-manager';
@@ -120,7 +121,7 @@ async function main(): Promise<void> {
       tags: z.array(z.string()).optional().describe('Tags for categorization'),
     },
     async (args: AddMemoryInput) => {
-      const scope = args.scope || config?.default_scope || 'global';
+      const scope = args.scope || config?.default_scope || detectScope();
       const tags = args.tags || [];
 
       // Store locally first (working memory)

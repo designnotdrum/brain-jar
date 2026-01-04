@@ -125,7 +125,7 @@ async function main() {
         scope: zod_1.z.string().optional().describe('Scope: "global" or "project:<name>"'),
         tags: zod_1.z.array(zod_1.z.string()).optional().describe('Tags for categorization'),
     }, async (args) => {
-        const scope = args.scope || config?.default_scope || 'global';
+        const scope = args.scope || config?.default_scope || (0, core_1.detectScope)();
         const tags = args.tags || [];
         // Store locally first (working memory)
         const memory = localStore.add({

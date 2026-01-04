@@ -46,6 +46,7 @@ export class ForensicsMemory {
         investigation_name: investigation.name,
         mode: investigation.mode,
         status: investigation.status,
+        scope: investigation.scope,
       });
     } catch (error) {
       console.error('[forensics] Failed to save investigation:', error);

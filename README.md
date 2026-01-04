@@ -106,13 +106,13 @@ All plugins share the same user profile and memory infrastructure. Install share
 - **Perplexity Sonar** for real-time, cited answers
 - **Bundled dependencies** for instant marketplace install
 
-### forensics v0.3.0
+### forensics v0.4.0
+- **Project-aware scope** - Investigations auto-detect project context using detectScope()
 - **Subagent-driven investigations** keep main context clean with Haiku subagents for data-heavy operations
 - **Investigation persistence** across sessions
 - **7 MCP tools** for analysis and spec generation
 - **Skill-level adaptation** from beginner to expert
 - **OpenAPI/TypeScript output** from captured traffic
-- **Bundled dependencies** for instant marketplace install
 
 ### visual-thinking v0.3.2
 - **Auto-open on create** - diagrams now open in draw.io immediately when created (no extra export step)

@@ -3,6 +3,7 @@
  */
 
 import { randomUUID } from 'crypto';
+import { detectScope } from '@brain-jar/core';
 import {
   getForensicsMemory,
   type Investigation,
@@ -21,6 +22,7 @@ export interface InvestigationInfo {
   name: string;
   mode: InvestigationMode;
   status: InvestigationStatus;
+  scope: string;
   created: string;
   updated: string;
   target?: string;
@@ -37,12 +39,14 @@ export class InvestigationManager {
    */
   async start(options: StartInvestigationOptions): Promise<Investigation> {
     const now = new Date().toISOString();
+    const scope = detectScope();
 
     const investigation: Investigation = {
       id: randomUUID(),
       name: options.name,
       mode: options.mode,
       status: 'active',
+      scope,
       created: now,
       updated: now,
       target: options.target,
@@ -126,6 +130,7 @@ export class InvestigationManager {
       name: inv.name,
       mode: inv.mode,
       status: inv.status,
+      scope: inv.scope || 'global', // Fallback for older investigations
       created: inv.created,
       updated: inv.updated,
       target: inv.target,
@@ -145,6 +150,7 @@ export class InvestigationManager {
     lines.push('');
     lines.push(`**Mode:** ${inv.mode}`);
     lines.push(`**Status:** ${inv.status}`);
+    lines.push(`**Scope:** ${inv.scope || 'global'}`);
     lines.push(`**Created:** ${inv.created}`);
     lines.push(`**Last Updated:** ${inv.updated}`);
 
