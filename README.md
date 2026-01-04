@@ -92,12 +92,12 @@ All plugins share the same user profile and memory infrastructure. Install share
 
 ## Highlights
 
-### shared-memory v2.0.1
-- **15 MCP tools** for memory, profiles, and summaries
-- **Profile learning** with inference confirmation
-- **Auto-summaries** based on activity patterns
-- **Mem0 sync** for cross-machine persistence
-- **Bundled dependencies** for instant marketplace install
+### shared-memory v2.1.0
+- **Entity partitioning** isolates profile snapshots and search queries from regular memories
+- **Profile pruning** keeps one snapshot per day, with automatic migration
+- **Custom Mem0 instructions** filter what gets stored (with user override)
+- **Memory stats tool** for health checks and namespace counts
+- **16 MCP tools** for memory, profiles, summaries, and diagnostics
 
 ### perplexity-search v2.0.1
 - **Profile-enriched queries** return stack-relevant results

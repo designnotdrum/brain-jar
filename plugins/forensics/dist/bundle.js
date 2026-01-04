@@ -3223,8 +3223,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path2) {
-      let input = path2;
+    function removeDotSegments(path3) {
+      let input = path3;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3423,8 +3423,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path2, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path2 && path2 !== "/" ? path2 : void 0;
+        const [path3, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path3 && path3 !== "/" ? path3 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -6777,12 +6777,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs2, exportName) {
+    function addFormats(ajv, list, fs3, exportName) {
       var _a2;
       var _b;
       (_a2 = (_b = ajv.opts.code).formats) !== null && _a2 !== void 0 ? _a2 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs2[f]);
+        ajv.addFormat(f, fs3[f]);
     }
     module2.exports = exports2 = formatsPlugin;
     Object.defineProperty(exports2, "__esModule", { value: true });
@@ -15637,11 +15637,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path2) {
-      if (!path2 || typeof path2 !== "string") {
+    function lookup(path3) {
+      if (!path3 || typeof path3 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path2).toLowerCase().substr(1);
+      var extension2 = extname("x." + path3).toLowerCase().substr(1);
       if (!extension2) {
         return false;
       }
@@ -16746,11 +16746,11 @@ var require_form_data = __commonJS({
     "use strict";
     var CombinedStream = require_combined_stream();
     var util2 = require("util");
-    var path2 = require("path");
+    var path3 = require("path");
     var http = require("http");
     var https = require("https");
     var parseUrl = require("url").parse;
-    var fs2 = require("fs");
+    var fs3 = require("fs");
     var Stream = require("stream").Stream;
     var crypto = require("crypto");
     var mime = require_mime_types();
@@ -16817,7 +16817,7 @@ var require_form_data = __commonJS({
         if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
           callback(null, value.end + 1 - (value.start ? value.start : 0));
         } else {
-          fs2.stat(value.path, function(err, stat) {
+          fs3.stat(value.path, function(err, stat) {
             if (err) {
               callback(err);
               return;
@@ -16874,11 +16874,11 @@ var require_form_data = __commonJS({
     FormData2.prototype._getContentDisposition = function(value, options) {
       var filename;
       if (typeof options.filepath === "string") {
-        filename = path2.normalize(options.filepath).replace(/\\/g, "/");
+        filename = path3.normalize(options.filepath).replace(/\\/g, "/");
       } else if (options.filename || value && (value.name || value.path)) {
-        filename = path2.basename(options.filename || value && (value.name || value.path));
+        filename = path3.basename(options.filename || value && (value.name || value.path));
       } else if (value && value.readable && hasOwn(value, "httpVersion")) {
-        filename = path2.basename(value.client._httpMessage.path || "");
+        filename = path3.basename(value.client._httpMessage.path || "");
       }
       if (filename) {
         return 'filename="' + filename + '"';
@@ -17609,7 +17609,7 @@ var require_has_flag = __commonJS({
 var require_supports_color = __commonJS({
   "node_modules/supports-color/index.js"(exports2, module2) {
     "use strict";
-    var os2 = require("os");
+    var os3 = require("os");
     var tty = require("tty");
     var hasFlag = require_has_flag();
     var { env } = process;
@@ -17657,7 +17657,7 @@ var require_supports_color = __commonJS({
         return min;
       }
       if (process.platform === "win32") {
-        const osRelease = os2.release().split(".");
+        const osRelease = os3.release().split(".");
         if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
           return Number(osRelease[2]) >= 14931 ? 3 : 2;
         }
@@ -18893,9 +18893,9 @@ var require_axios = __commonJS({
     function removeBrackets(key) {
       return utils$1.endsWith(key, "[]") ? key.slice(0, -2) : key;
     }
-    function renderKey(path2, key, dots) {
-      if (!path2) return key;
-      return path2.concat(key).map(function each(token, i) {
+    function renderKey(path3, key, dots) {
+      if (!path3) return key;
+      return path3.concat(key).map(function each(token, i) {
         token = removeBrackets(token);
         return !dots && i ? "[" + token + "]" : token;
       }).join(dots ? "." : "");
@@ -18940,9 +18940,9 @@ var require_axios = __commonJS({
         }
         return value;
       }
-      function defaultVisitor(value, key, path2) {
+      function defaultVisitor(value, key, path3) {
         let arr = value;
-        if (value && !path2 && typeof value === "object") {
+        if (value && !path3 && typeof value === "object") {
           if (utils$1.endsWith(key, "{}")) {
             key = metaTokens ? key : key.slice(0, -2);
             value = JSON.stringify(value);
@@ -18961,7 +18961,7 @@ var require_axios = __commonJS({
         if (isVisitable(value)) {
           return true;
         }
-        formData.append(renderKey(path2, key, dots), convertValue(value));
+        formData.append(renderKey(path3, key, dots), convertValue(value));
         return false;
       }
       const stack = [];
@@ -18970,10 +18970,10 @@ var require_axios = __commonJS({
         convertValue,
         isVisitable
       });
-      function build(value, path2) {
+      function build(value, path3) {
         if (utils$1.isUndefined(value)) return;
         if (stack.indexOf(value) !== -1) {
-          throw Error("Circular reference detected in " + path2.join("."));
+          throw Error("Circular reference detected in " + path3.join("."));
         }
         stack.push(value);
         utils$1.forEach(value, function each(el, key) {
@@ -18981,11 +18981,11 @@ var require_axios = __commonJS({
             formData,
             el,
             utils$1.isString(key) ? key.trim() : key,
-            path2,
+            path3,
             exposedHelpers
           );
           if (result === true) {
-            build(el, path2 ? path2.concat(key) : [key]);
+            build(el, path3 ? path3.concat(key) : [key]);
           }
         });
         stack.pop();
@@ -19149,7 +19149,7 @@ var require_axios = __commonJS({
     };
     function toURLEncodedForm(data, options) {
       return toFormData(data, new platform.classes.URLSearchParams(), Object.assign({
-        visitor: function(value, key, path2, helpers) {
+        visitor: function(value, key, path3, helpers) {
           if (platform.isNode && utils$1.isBuffer(value)) {
             this.append(key, value.toString("base64"));
             return false;
@@ -19176,11 +19176,11 @@ var require_axios = __commonJS({
       return obj;
     }
     function formDataToJSON(formData) {
-      function buildPath(path2, value, target, index) {
-        let name = path2[index++];
+      function buildPath(path3, value, target, index) {
+        let name = path3[index++];
         if (name === "__proto__") return true;
         const isNumericKey = Number.isFinite(+name);
-        const isLast = index >= path2.length;
+        const isLast = index >= path3.length;
         name = !name && utils$1.isArray(target) ? target.length : name;
         if (isLast) {
           if (utils$1.hasOwnProp(target, name)) {
@@ -19193,7 +19193,7 @@ var require_axios = __commonJS({
         if (!target[name] || !utils$1.isObject(target[name])) {
           target[name] = [];
         }
-        const result = buildPath(path2, value, target[name], index);
+        const result = buildPath(path3, value, target[name], index);
         if (result && utils$1.isArray(target[name])) {
           target[name] = arrayToObject(target[name]);
         }
@@ -20251,9 +20251,9 @@ var require_axios = __commonJS({
           auth = urlUsername + ":" + urlPassword;
         }
         auth && headers.delete("authorization");
-        let path2;
+        let path3;
         try {
-          path2 = buildURL(
+          path3 = buildURL(
             parsed.pathname + parsed.search,
             config2.params,
             config2.paramsSerializer
@@ -20271,7 +20271,7 @@ var require_axios = __commonJS({
           false
         );
         const options = {
-          path: path2,
+          path: path3,
           method,
           headers: headers.toJSON(),
           agents: { http: config2.httpAgent, https: config2.httpsAgent },
@@ -20529,10 +20529,10 @@ var require_axios = __commonJS({
     var cookies = platform.hasStandardBrowserEnv ? (
       // Standard browser envs support document.cookie
       {
-        write(name, value, expires, path2, domain2, secure) {
+        write(name, value, expires, path3, domain2, secure) {
           const cookie = [name + "=" + encodeURIComponent(value)];
           utils$1.isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
-          utils$1.isString(path2) && cookie.push("path=" + path2);
+          utils$1.isString(path3) && cookie.push("path=" + path3);
           utils$1.isString(domain2) && cookie.push("domain=" + domain2);
           secure === true && cookie.push("secure");
           document.cookie = cookie.join("; ");
@@ -22649,8 +22649,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path2, errorMaps, issueData } = params;
-  const fullPath = [...path2, ...issueData.path || []];
+  const { data, path: path3, errorMaps, issueData } = params;
+  const fullPath = [...path3, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -22765,11 +22765,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path2, key) {
+  constructor(parent, value, path3, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path2;
+    this._path = path3;
     this._key = key;
   }
   get path() {
@@ -26413,10 +26413,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path2) {
-  if (!path2)
+function getElementAtPath(obj, path3) {
+  if (!path3)
     return obj;
-  return path2.reduce((acc, key) => acc?.[key], obj);
+  return path3.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -26799,11 +26799,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path2, issues) {
+function prefixIssues(path3, issues) {
   return issues.map((iss) => {
     var _a2;
     (_a2 = iss).path ?? (_a2.path = []);
-    iss.path.unshift(path2);
+    iss.path.unshift(path3);
     return iss;
   });
 }
@@ -36187,8 +36187,47 @@ function loadConfig() {
   return JSON.parse(content);
 }
 
+// packages/core/src/instructions.ts
+var fs2 = __toESM(require("fs"));
+var path2 = __toESM(require("path"));
+var os2 = __toESM(require("os"));
+var USER_INSTRUCTIONS_PATH = path2.join(
+  os2.homedir(),
+  ".config",
+  "brain-jar",
+  "mem0-instructions.txt"
+);
+var DEFAULT_INSTRUCTIONS = `Brain-jar memory assistant rules:
+
+STORE:
+- Decisions and their rationale
+- User preferences explicitly stated
+- Project-specific context and learnings
+- Technical discoveries and solutions
+- Workflow patterns that worked well
+
+IGNORE:
+- Facts about user identity, skills, or preferences (route to profile)
+- Search queries (handled by perplexity namespace)
+- Transient debugging context
+- Speculation (might, maybe, possibly)
+- Duplicate information already stored
+
+CONSOLIDATE:
+- If a fact updates an existing memory, update rather than add
+- Prefer specific over general ("uses TypeScript 5.3" over "uses TypeScript")`;
+function getInstructions() {
+  try {
+    if (fs2.existsSync(USER_INSTRUCTIONS_PATH)) {
+      return fs2.readFileSync(USER_INSTRUCTIONS_PATH, "utf-8").trim();
+    }
+  } catch {
+  }
+  return DEFAULT_INSTRUCTIONS;
+}
+
 // packages/core/src/mem0-client.ts
-var Mem0Client = class {
+var Mem0Client = class _Mem0Client {
   constructor(apiKey, userId = "default") {
     const { MemoryClient } = require_dist2();
     this.client = new MemoryClient({ apiKey });
@@ -36201,21 +36240,32 @@ var Mem0Client = class {
     }
     return response?.results || [];
   }
-  async add(content, metadata = {}) {
+  async add(content, metadata = {}, options) {
     const messages = [{ role: "user", content }];
-    const result = await this.client.add(messages, {
+    const addOptions = {
       user_id: this.userId,
       metadata
-    });
+    };
+    if (options?.agentId) {
+      addOptions.agent_id = options.agentId;
+    }
+    if (!options?.skipInstructions && !options?.agentId) {
+      addOptions.instructions = getInstructions();
+    }
+    const result = await this.client.add(messages, addOptions);
     const results = this.extractResults(result);
     const firstResult = results[0];
     return firstResult?.id || firstResult?.event_id || result?.id || result?.event_id || "";
   }
-  async search(query, limit = 10) {
-    const response = await this.client.search(query, {
+  async search(query, limit = 10, options) {
+    const searchOptions = {
       user_id: this.userId,
       limit
-    });
+    };
+    if (options?.agentId) {
+      searchOptions.agent_id = options.agentId;
+    }
+    const response = await this.client.search(query, searchOptions);
     const results = this.extractResults(response);
     return results.map((r) => ({
       id: r.id,
@@ -36230,10 +36280,14 @@ var Mem0Client = class {
       updated_at: /* @__PURE__ */ new Date()
     }));
   }
-  async getAll() {
-    const response = await this.client.getAll({
+  async getAll(options) {
+    const getAllOptions = {
       user_id: this.userId
-    });
+    };
+    if (options?.agentId) {
+      getAllOptions.agent_id = options.agentId;
+    }
+    const response = await this.client.getAll(getAllOptions);
     const results = this.extractResults(response);
     return results.map((r) => ({
       id: r.id,
@@ -36256,7 +36310,81 @@ var Mem0Client = class {
       return false;
     }
   }
-  // --- Profile Snapshot Methods ---
+  static {
+    // --- Profile Snapshot Methods ---
+    // Profile snapshots use agent_id: 'profile-mgr' to partition from regular memories
+    this.PROFILE_AGENT_ID = "profile-mgr";
+  }
+  /**
+   * Returns today's date as YYYY-MM-DD prefix for filtering snapshots.
+   * Uses UTC to match timestamps stored via toISOString().
+   */
+  getTodayPrefix() {
+    return (/* @__PURE__ */ new Date()).toISOString().substring(0, 10);
+  }
+  /**
+   * Gets all profile snapshots from today.
+   * Returns array of { id, timestamp } sorted oldest first.
+   */
+  async getTodaysSnapshots() {
+    try {
+      const todayPrefix = this.getTodayPrefix();
+      const response = await this.client.getAll({
+        user_id: this.userId,
+        agent_id: _Mem0Client.PROFILE_AGENT_ID
+      });
+      const results = this.extractResults(response);
+      const todaysSnapshots = results.filter((r) => r.metadata?.type === "profile-snapshot").filter((r) => {
+        const timestamp = r.metadata?.timestamp || "";
+        return timestamp.startsWith(todayPrefix);
+      }).map((r) => ({
+        id: r.id,
+        timestamp: r.metadata?.timestamp || ""
+      })).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+      return todaysSnapshots;
+    } catch (error2) {
+      console.warn("Failed to get today's snapshots:", error2);
+      return [];
+    }
+  }
+  /**
+   * One-time migration: Prune profile history to one snapshot per day.
+   * Keeps the latest snapshot from each day, deletes the rest.
+   * Returns count of deleted snapshots.
+   */
+  async pruneProfileHistory() {
+    try {
+      const response = await this.client.getAll({
+        user_id: this.userId,
+        agent_id: _Mem0Client.PROFILE_AGENT_ID
+      });
+      const results = this.extractResults(response);
+      const byDay = /* @__PURE__ */ new Map();
+      for (const r of results) {
+        if (r.metadata?.type !== "profile-snapshot") continue;
+        const ts = r.metadata?.timestamp || r.created_at || "";
+        const day = ts.split("T")[0];
+        if (!day) continue;
+        if (!byDay.has(day)) {
+          byDay.set(day, []);
+        }
+        byDay.get(day).push({ id: r.id, timestamp: ts });
+      }
+      let deletedCount = 0;
+      for (const [_day, snapshots] of byDay) {
+        if (snapshots.length <= 1) continue;
+        snapshots.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+        for (let i = 1; i < snapshots.length; i++) {
+          const deleted = await this.delete(snapshots[i].id);
+          if (deleted) deletedCount++;
+        }
+      }
+      return deletedCount;
+    } catch (error2) {
+      console.warn("Failed to prune profile history:", error2);
+      return 0;
+    }
+  }
   /**
    * Gets the latest profile snapshot from Mem0.
    * Returns null if no profile exists.
@@ -36264,7 +36392,8 @@ var Mem0Client = class {
   async getLatestProfile() {
     try {
       const response = await this.client.getAll({
-        user_id: this.userId
+        user_id: this.userId,
+        agent_id: _Mem0Client.PROFILE_AGENT_ID
       });
       const results = this.extractResults(response);
       const profileSnapshots = results.filter((r) => r.metadata?.type === "profile-snapshot").sort((a, b) => {
@@ -36294,14 +36423,20 @@ var Mem0Client = class {
   }
   /**
    * Saves a new profile snapshot to Mem0.
-   * Always creates a new memory (append-only).
+   * Uses agent_id 'profile-mgr' to partition from regular memories.
+   * Prunes any existing snapshots from today to ensure only one per day.
    */
   async saveProfileSnapshot(profile) {
     try {
+      const todaysSnapshots = await this.getTodaysSnapshots();
+      for (const snapshot of todaysSnapshots) {
+        await this.delete(snapshot.id);
+      }
       const timestamp = (/* @__PURE__ */ new Date()).toISOString();
       const messages = [{ role: "user", content: JSON.stringify(profile) }];
       const result = await this.client.add(messages, {
         user_id: this.userId,
+        agent_id: _Mem0Client.PROFILE_AGENT_ID,
         infer: false,
         // Store raw JSON without semantic extraction
         metadata: {
@@ -36326,7 +36461,8 @@ var Mem0Client = class {
   async getProfileHistory(since, limit) {
     try {
       const response = await this.client.getAll({
-        user_id: this.userId
+        user_id: this.userId,
+        agent_id: _Mem0Client.PROFILE_AGENT_ID
       });
       const results = this.extractResults(response);
       let snapshots = results.filter((r) => r.metadata?.type === "profile-snapshot").map((r) => {
@@ -36419,9 +36555,14 @@ var Mem0Client = class {
     const summaries = await this.getSummaries(scope, void 0, 1);
     return summaries.length > 0 ? summaries[0] : null;
   }
-  // --- Search Memory Storage (for perplexity-search) ---
+  static {
+    // --- Search Memory Storage (for perplexity-search) ---
+    // Search results use agent_id: 'perplexity' to partition from regular memories
+    this.PERPLEXITY_AGENT_ID = "perplexity";
+  }
   /**
    * Stores a search query and result summary.
+   * Uses agent_id 'perplexity' to partition from regular memories.
    */
   async storeSearchResult(query, summary) {
     try {
@@ -36429,6 +36570,7 @@ var Mem0Client = class {
       const messages = [{ role: "user", content }];
       const result = await this.client.add(messages, {
         user_id: this.userId,
+        agent_id: _Mem0Client.PERPLEXITY_AGENT_ID,
         metadata: {
           type: "search",
           query,
@@ -36446,15 +36588,17 @@ var Mem0Client = class {
   }
   /**
    * Gets relevant context for a search query from past searches.
+   * Searches within the perplexity partition only.
    */
   async getSearchContext(query, limit = 3) {
     try {
       const response = await this.client.search(query, {
         user_id: this.userId,
+        agent_id: _Mem0Client.PERPLEXITY_AGENT_ID,
         limit
       });
       const results = this.extractResults(response);
-      return results.filter((r) => r.metadata?.type === "search").map((r) => r.memory);
+      return results.map((r) => r.memory);
     } catch (error2) {
       console.warn("Failed to get search context:", error2);
       return [];
@@ -37477,13 +37621,13 @@ var BuildSpecTool = class {
   endpointsToOpenAPIPaths(endpoints) {
     const paths = {};
     for (const ep of endpoints) {
-      const path2 = ep.path.startsWith("/") ? ep.path : `/${ep.path}`;
+      const path3 = ep.path.startsWith("/") ? ep.path : `/${ep.path}`;
       const method = ep.method.toLowerCase();
-      if (!paths[path2]) {
-        paths[path2] = {};
+      if (!paths[path3]) {
+        paths[path3] = {};
       }
-      paths[path2][method] = {
-        summary: ep.description || `${ep.method} ${path2}`,
+      paths[path3][method] = {
+        summary: ep.description || `${ep.method} ${path3}`,
         parameters: ep.queryParams ? Object.keys(ep.queryParams).map((name) => ({
           name,
           in: "query",

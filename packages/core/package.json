@@ -1,6 +1,6 @@
 {
   "name": "@brain-jar/core",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Shared core utilities for brain-jar plugins",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

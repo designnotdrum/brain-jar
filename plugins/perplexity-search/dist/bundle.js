@@ -3223,8 +3223,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path5) {
-      let input = path5;
+    function removeDotSegments(path6) {
+      let input = path6;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3423,8 +3423,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path5, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path5 && path5 !== "/" ? path5 : void 0;
+        const [path6, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path6 && path6 !== "/" ? path6 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -6777,12 +6777,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs5, exportName) {
+    function addFormats(ajv, list, fs6, exportName) {
       var _a3;
       var _b;
       (_a3 = (_b = ajv.opts.code).formats) !== null && _a3 !== void 0 ? _a3 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs5[f]);
+        ajv.addFormat(f, fs6[f]);
     }
     module2.exports = exports2 = formatsPlugin;
     Object.defineProperty(exports2, "__esModule", { value: true });
@@ -15637,11 +15637,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path5) {
-      if (!path5 || typeof path5 !== "string") {
+    function lookup(path6) {
+      if (!path6 || typeof path6 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path5).toLowerCase().substr(1);
+      var extension2 = extname("x." + path6).toLowerCase().substr(1);
       if (!extension2) {
         return false;
       }
@@ -16746,11 +16746,11 @@ var require_form_data = __commonJS({
     "use strict";
     var CombinedStream = require_combined_stream();
     var util2 = require("util");
-    var path5 = require("path");
+    var path6 = require("path");
     var http = require("http");
     var https = require("https");
     var parseUrl = require("url").parse;
-    var fs5 = require("fs");
+    var fs6 = require("fs");
     var Stream2 = require("stream").Stream;
     var crypto = require("crypto");
     var mime = require_mime_types();
@@ -16817,7 +16817,7 @@ var require_form_data = __commonJS({
         if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
           callback(null, value.end + 1 - (value.start ? value.start : 0));
         } else {
-          fs5.stat(value.path, function(err, stat) {
+          fs6.stat(value.path, function(err, stat) {
             if (err) {
               callback(err);
               return;
@@ -16874,11 +16874,11 @@ var require_form_data = __commonJS({
     FormData2.prototype._getContentDisposition = function(value, options) {
       var filename;
       if (typeof options.filepath === "string") {
-        filename = path5.normalize(options.filepath).replace(/\\/g, "/");
+        filename = path6.normalize(options.filepath).replace(/\\/g, "/");
       } else if (options.filename || value && (value.name || value.path)) {
-        filename = path5.basename(options.filename || value && (value.name || value.path));
+        filename = path6.basename(options.filename || value && (value.name || value.path));
       } else if (value && value.readable && hasOwn2(value, "httpVersion")) {
-        filename = path5.basename(value.client._httpMessage.path || "");
+        filename = path6.basename(value.client._httpMessage.path || "");
       }
       if (filename) {
         return 'filename="' + filename + '"';
@@ -17609,7 +17609,7 @@ var require_has_flag = __commonJS({
 var require_supports_color = __commonJS({
   "node_modules/supports-color/index.js"(exports2, module2) {
     "use strict";
-    var os4 = require("os");
+    var os5 = require("os");
     var tty = require("tty");
     var hasFlag = require_has_flag();
     var { env } = process;
@@ -17657,7 +17657,7 @@ var require_supports_color = __commonJS({
         return min;
       }
       if (process.platform === "win32") {
-        const osRelease = os4.release().split(".");
+        const osRelease = os5.release().split(".");
         if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
           return Number(osRelease[2]) >= 14931 ? 3 : 2;
         }
@@ -18893,9 +18893,9 @@ var require_axios = __commonJS({
     function removeBrackets(key) {
       return utils$1.endsWith(key, "[]") ? key.slice(0, -2) : key;
     }
-    function renderKey(path5, key, dots) {
-      if (!path5) return key;
-      return path5.concat(key).map(function each(token, i) {
+    function renderKey(path6, key, dots) {
+      if (!path6) return key;
+      return path6.concat(key).map(function each(token, i) {
         token = removeBrackets(token);
         return !dots && i ? "[" + token + "]" : token;
       }).join(dots ? "." : "");
@@ -18940,9 +18940,9 @@ var require_axios = __commonJS({
         }
         return value;
       }
-      function defaultVisitor(value, key, path5) {
+      function defaultVisitor(value, key, path6) {
         let arr = value;
-        if (value && !path5 && typeof value === "object") {
+        if (value && !path6 && typeof value === "object") {
           if (utils$1.endsWith(key, "{}")) {
             key = metaTokens ? key : key.slice(0, -2);
             value = JSON.stringify(value);
@@ -18961,7 +18961,7 @@ var require_axios = __commonJS({
         if (isVisitable(value)) {
           return true;
         }
-        formData.append(renderKey(path5, key, dots), convertValue(value));
+        formData.append(renderKey(path6, key, dots), convertValue(value));
         return false;
       }
       const stack = [];
@@ -18970,10 +18970,10 @@ var require_axios = __commonJS({
         convertValue,
         isVisitable
       });
-      function build(value, path5) {
+      function build(value, path6) {
         if (utils$1.isUndefined(value)) return;
         if (stack.indexOf(value) !== -1) {
-          throw Error("Circular reference detected in " + path5.join("."));
+          throw Error("Circular reference detected in " + path6.join("."));
         }
         stack.push(value);
         utils$1.forEach(value, function each(el, key) {
@@ -18981,11 +18981,11 @@ var require_axios = __commonJS({
             formData,
             el,
             utils$1.isString(key) ? key.trim() : key,
-            path5,
+            path6,
             exposedHelpers
           );
           if (result === true) {
-            build(el, path5 ? path5.concat(key) : [key]);
+            build(el, path6 ? path6.concat(key) : [key]);
           }
         });
         stack.pop();
@@ -19149,7 +19149,7 @@ var require_axios = __commonJS({
     };
     function toURLEncodedForm(data, options) {
       return toFormData(data, new platform.classes.URLSearchParams(), Object.assign({
-        visitor: function(value, key, path5, helpers) {
+        visitor: function(value, key, path6, helpers) {
           if (platform.isNode && utils$1.isBuffer(value)) {
             this.append(key, value.toString("base64"));
             return false;
@@ -19176,11 +19176,11 @@ var require_axios = __commonJS({
       return obj;
     }
     function formDataToJSON(formData) {
-      function buildPath(path5, value, target, index) {
-        let name = path5[index++];
+      function buildPath(path6, value, target, index) {
+        let name = path6[index++];
         if (name === "__proto__") return true;
         const isNumericKey = Number.isFinite(+name);
-        const isLast = index >= path5.length;
+        const isLast = index >= path6.length;
         name = !name && utils$1.isArray(target) ? target.length : name;
         if (isLast) {
           if (utils$1.hasOwnProp(target, name)) {
@@ -19193,7 +19193,7 @@ var require_axios = __commonJS({
         if (!target[name] || !utils$1.isObject(target[name])) {
           target[name] = [];
         }
-        const result = buildPath(path5, value, target[name], index);
+        const result = buildPath(path6, value, target[name], index);
         if (result && utils$1.isArray(target[name])) {
           target[name] = arrayToObject(target[name]);
         }
@@ -20251,9 +20251,9 @@ var require_axios = __commonJS({
           auth = urlUsername + ":" + urlPassword;
         }
         auth && headers.delete("authorization");
-        let path5;
+        let path6;
         try {
-          path5 = buildURL(
+          path6 = buildURL(
             parsed.pathname + parsed.search,
             config2.params,
             config2.paramsSerializer
@@ -20271,7 +20271,7 @@ var require_axios = __commonJS({
           false
         );
         const options = {
-          path: path5,
+          path: path6,
           method,
           headers: headers.toJSON(),
           agents: { http: config2.httpAgent, https: config2.httpsAgent },
@@ -20529,10 +20529,10 @@ var require_axios = __commonJS({
     var cookies = platform.hasStandardBrowserEnv ? (
       // Standard browser envs support document.cookie
       {
-        write(name, value, expires, path5, domain2, secure) {
+        write(name, value, expires, path6, domain2, secure) {
           const cookie = [name + "=" + encodeURIComponent(value)];
           utils$1.isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
-          utils$1.isString(path5) && cookie.push("path=" + path5);
+          utils$1.isString(path6) && cookie.push("path=" + path6);
           utils$1.isString(domain2) && cookie.push("domain=" + domain2);
           secure === true && cookie.push("secure");
           document.cookie = cookie.join("; ");
@@ -22823,8 +22823,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path5, errorMaps, issueData } = params;
-  const fullPath = [...path5, ...issueData.path || []];
+  const { data, path: path6, errorMaps, issueData } = params;
+  const fullPath = [...path6, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -22939,11 +22939,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path5, key) {
+  constructor(parent, value, path6, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path5;
+    this._path = path6;
     this._key = key;
   }
   get path() {
@@ -26587,10 +26587,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path5) {
-  if (!path5)
+function getElementAtPath(obj, path6) {
+  if (!path6)
     return obj;
-  return path5.reduce((acc, key) => acc?.[key], obj);
+  return path6.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -26973,11 +26973,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path5, issues) {
+function prefixIssues(path6, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path5);
+    iss.path.unshift(path6);
     return iss;
   });
 }
@@ -36321,9 +36321,9 @@ var StdioServerTransport = class {
 };
 
 // plugins/perplexity-search/src/index.ts
-var fs4 = __toESM(require("fs/promises"));
-var path4 = __toESM(require("path"));
-var os3 = __toESM(require("os"));
+var fs5 = __toESM(require("fs/promises"));
+var path5 = __toESM(require("path"));
+var os4 = __toESM(require("os"));
 
 // plugins/perplexity-search/src/profile/manager.ts
 var fs = __toESM(require("fs/promises"));
@@ -36954,12 +36954,12 @@ function encodeURIPath(str) {
   return str.replace(/[^A-Za-z0-9\-._~!$&'()*+,;=:@]+/g, encodeURIComponent);
 }
 var EMPTY = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.create(null));
-var createPathTagFunction = (pathEncoder = encodeURIPath) => function path5(statics, ...params) {
+var createPathTagFunction = (pathEncoder = encodeURIPath) => function path6(statics, ...params) {
   if (statics.length === 1)
     return statics[0];
   let postPath = false;
   const invalidSegments = [];
-  const path6 = statics.reduce((previousValue, currentValue, index) => {
+  const path7 = statics.reduce((previousValue, currentValue, index) => {
     if (/[?#]/.test(currentValue)) {
       postPath = true;
     }
@@ -36976,7 +36976,7 @@ var createPathTagFunction = (pathEncoder = encodeURIPath) => function path5(stat
     }
     return previousValue + currentValue + (index === params.length ? "" : encoded);
   }, "");
-  const pathOnly = path6.split(/[?#]/, 1)[0];
+  const pathOnly = path7.split(/[?#]/, 1)[0];
   const invalidSegmentPattern = /(?<=^|\/)(?:\.|%2e){1,2}(?=\/|$)/gi;
   let match;
   while ((match = invalidSegmentPattern.exec(pathOnly)) !== null) {
@@ -36997,10 +36997,10 @@ var createPathTagFunction = (pathEncoder = encodeURIPath) => function path5(stat
     }, "");
     throw new PerplexityError(`Path parameters result in path with invalid segments:
 ${invalidSegments.map((e) => e.error).join("\n")}
-${path6}
+${path7}
 ${underline}`);
   }
-  return path6;
+  return path7;
 };
 var path = /* @__PURE__ */ createPathTagFunction(encodeURIPath);
 
@@ -37707,9 +37707,9 @@ var Perplexity = class {
   makeStatusError(status, error2, message, headers) {
     return APIError.generate(status, error2, message, headers);
   }
-  buildURL(path5, query, defaultBaseURL) {
+  buildURL(path6, query, defaultBaseURL) {
     const baseURL = !__classPrivateFieldGet(this, _Perplexity_instances, "m", _Perplexity_baseURLOverridden).call(this) && defaultBaseURL || this.baseURL;
-    const url2 = isAbsoluteURL(path5) ? new URL(path5) : new URL(baseURL + (baseURL.endsWith("/") && path5.startsWith("/") ? path5.slice(1) : path5));
+    const url2 = isAbsoluteURL(path6) ? new URL(path6) : new URL(baseURL + (baseURL.endsWith("/") && path6.startsWith("/") ? path6.slice(1) : path6));
     const defaultQuery = this.defaultQuery();
     if (!isEmptyObj(defaultQuery)) {
       query = { ...defaultQuery, ...query };
@@ -37732,24 +37732,24 @@ var Perplexity = class {
    */
   async prepareRequest(request, { url: url2, options }) {
   }
-  get(path5, opts) {
-    return this.methodRequest("get", path5, opts);
+  get(path6, opts) {
+    return this.methodRequest("get", path6, opts);
   }
-  post(path5, opts) {
-    return this.methodRequest("post", path5, opts);
+  post(path6, opts) {
+    return this.methodRequest("post", path6, opts);
   }
-  patch(path5, opts) {
-    return this.methodRequest("patch", path5, opts);
+  patch(path6, opts) {
+    return this.methodRequest("patch", path6, opts);
   }
-  put(path5, opts) {
-    return this.methodRequest("put", path5, opts);
+  put(path6, opts) {
+    return this.methodRequest("put", path6, opts);
   }
-  delete(path5, opts) {
-    return this.methodRequest("delete", path5, opts);
+  delete(path6, opts) {
+    return this.methodRequest("delete", path6, opts);
   }
-  methodRequest(method, path5, opts) {
+  methodRequest(method, path6, opts) {
     return this.request(Promise.resolve(opts).then((opts2) => {
-      return { method, path: path5, ...opts2 };
+      return { method, path: path6, ...opts2 };
     }));
   }
   request(options, remainingRetries = null) {
@@ -37924,8 +37924,8 @@ var Perplexity = class {
   }
   async buildRequest(inputOptions, { retryCount = 0 } = {}) {
     const options = { ...inputOptions };
-    const { method, path: path5, query, defaultBaseURL } = options;
-    const url2 = this.buildURL(path5, query, defaultBaseURL);
+    const { method, path: path6, query, defaultBaseURL } = options;
+    const url2 = this.buildURL(path6, query, defaultBaseURL);
     if ("timeout" in options)
       validatePositiveInteger("timeout", options.timeout);
     options.timeout = options.timeout ?? this.timeout;
@@ -38045,8 +38045,47 @@ function loadConfig() {
   return JSON.parse(content);
 }
 
+// packages/core/src/instructions.ts
+var fs3 = __toESM(require("fs"));
+var path3 = __toESM(require("path"));
+var os2 = __toESM(require("os"));
+var USER_INSTRUCTIONS_PATH = path3.join(
+  os2.homedir(),
+  ".config",
+  "brain-jar",
+  "mem0-instructions.txt"
+);
+var DEFAULT_INSTRUCTIONS = `Brain-jar memory assistant rules:
+
+STORE:
+- Decisions and their rationale
+- User preferences explicitly stated
+- Project-specific context and learnings
+- Technical discoveries and solutions
+- Workflow patterns that worked well
+
+IGNORE:
+- Facts about user identity, skills, or preferences (route to profile)
+- Search queries (handled by perplexity namespace)
+- Transient debugging context
+- Speculation (might, maybe, possibly)
+- Duplicate information already stored
+
+CONSOLIDATE:
+- If a fact updates an existing memory, update rather than add
+- Prefer specific over general ("uses TypeScript 5.3" over "uses TypeScript")`;
+function getInstructions() {
+  try {
+    if (fs3.existsSync(USER_INSTRUCTIONS_PATH)) {
+      return fs3.readFileSync(USER_INSTRUCTIONS_PATH, "utf-8").trim();
+    }
+  } catch {
+  }
+  return DEFAULT_INSTRUCTIONS;
+}
+
 // packages/core/src/mem0-client.ts
-var Mem0Client = class {
+var Mem0Client = class _Mem0Client {
   constructor(apiKey, userId = "default") {
     const { MemoryClient } = require_dist2();
     this.client = new MemoryClient({ apiKey });
@@ -38059,21 +38098,32 @@ var Mem0Client = class {
     }
     return response?.results || [];
   }
-  async add(content, metadata = {}) {
+  async add(content, metadata = {}, options) {
     const messages = [{ role: "user", content }];
-    const result = await this.client.add(messages, {
+    const addOptions = {
       user_id: this.userId,
       metadata
-    });
+    };
+    if (options?.agentId) {
+      addOptions.agent_id = options.agentId;
+    }
+    if (!options?.skipInstructions && !options?.agentId) {
+      addOptions.instructions = getInstructions();
+    }
+    const result = await this.client.add(messages, addOptions);
     const results = this.extractResults(result);
     const firstResult = results[0];
     return firstResult?.id || firstResult?.event_id || result?.id || result?.event_id || "";
   }
-  async search(query, limit = 10) {
-    const response = await this.client.search(query, {
+  async search(query, limit = 10, options) {
+    const searchOptions = {
       user_id: this.userId,
       limit
-    });
+    };
+    if (options?.agentId) {
+      searchOptions.agent_id = options.agentId;
+    }
+    const response = await this.client.search(query, searchOptions);
     const results = this.extractResults(response);
     return results.map((r) => ({
       id: r.id,
@@ -38088,10 +38138,14 @@ var Mem0Client = class {
       updated_at: /* @__PURE__ */ new Date()
     }));
   }
-  async getAll() {
-    const response = await this.client.getAll({
+  async getAll(options) {
+    const getAllOptions = {
       user_id: this.userId
-    });
+    };
+    if (options?.agentId) {
+      getAllOptions.agent_id = options.agentId;
+    }
+    const response = await this.client.getAll(getAllOptions);
     const results = this.extractResults(response);
     return results.map((r) => ({
       id: r.id,
@@ -38114,7 +38168,81 @@ var Mem0Client = class {
       return false;
     }
   }
-  // --- Profile Snapshot Methods ---
+  static {
+    // --- Profile Snapshot Methods ---
+    // Profile snapshots use agent_id: 'profile-mgr' to partition from regular memories
+    this.PROFILE_AGENT_ID = "profile-mgr";
+  }
+  /**
+   * Returns today's date as YYYY-MM-DD prefix for filtering snapshots.
+   * Uses UTC to match timestamps stored via toISOString().
+   */
+  getTodayPrefix() {
+    return (/* @__PURE__ */ new Date()).toISOString().substring(0, 10);
+  }
+  /**
+   * Gets all profile snapshots from today.
+   * Returns array of { id, timestamp } sorted oldest first.
+   */
+  async getTodaysSnapshots() {
+    try {
+      const todayPrefix = this.getTodayPrefix();
+      const response = await this.client.getAll({
+        user_id: this.userId,
+        agent_id: _Mem0Client.PROFILE_AGENT_ID
+      });
+      const results = this.extractResults(response);
+      const todaysSnapshots = results.filter((r) => r.metadata?.type === "profile-snapshot").filter((r) => {
+        const timestamp = r.metadata?.timestamp || "";
+        return timestamp.startsWith(todayPrefix);
+      }).map((r) => ({
+        id: r.id,
+        timestamp: r.metadata?.timestamp || ""
+      })).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+      return todaysSnapshots;
+    } catch (error2) {
+      console.warn("Failed to get today's snapshots:", error2);
+      return [];
+    }
+  }
+  /**
+   * One-time migration: Prune profile history to one snapshot per day.
+   * Keeps the latest snapshot from each day, deletes the rest.
+   * Returns count of deleted snapshots.
+   */
+  async pruneProfileHistory() {
+    try {
+      const response = await this.client.getAll({
+        user_id: this.userId,
+        agent_id: _Mem0Client.PROFILE_AGENT_ID
+      });
+      const results = this.extractResults(response);
+      const byDay = /* @__PURE__ */ new Map();
+      for (const r of results) {
+        if (r.metadata?.type !== "profile-snapshot") continue;
+        const ts = r.metadata?.timestamp || r.created_at || "";
+        const day = ts.split("T")[0];
+        if (!day) continue;
+        if (!byDay.has(day)) {
+          byDay.set(day, []);
+        }
+        byDay.get(day).push({ id: r.id, timestamp: ts });
+      }
+      let deletedCount = 0;
+      for (const [_day, snapshots] of byDay) {
+        if (snapshots.length <= 1) continue;
+        snapshots.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+        for (let i = 1; i < snapshots.length; i++) {
+          const deleted = await this.delete(snapshots[i].id);
+          if (deleted) deletedCount++;
+        }
+      }
+      return deletedCount;
+    } catch (error2) {
+      console.warn("Failed to prune profile history:", error2);
+      return 0;
+    }
+  }
   /**
    * Gets the latest profile snapshot from Mem0.
    * Returns null if no profile exists.
@@ -38122,7 +38250,8 @@ var Mem0Client = class {
   async getLatestProfile() {
     try {
       const response = await this.client.getAll({
-        user_id: this.userId
+        user_id: this.userId,
+        agent_id: _Mem0Client.PROFILE_AGENT_ID
       });
       const results = this.extractResults(response);
       const profileSnapshots = results.filter((r) => r.metadata?.type === "profile-snapshot").sort((a, b) => {
@@ -38152,14 +38281,20 @@ var Mem0Client = class {
   }
   /**
    * Saves a new profile snapshot to Mem0.
-   * Always creates a new memory (append-only).
+   * Uses agent_id 'profile-mgr' to partition from regular memories.
+   * Prunes any existing snapshots from today to ensure only one per day.
    */
   async saveProfileSnapshot(profile) {
     try {
+      const todaysSnapshots = await this.getTodaysSnapshots();
+      for (const snapshot of todaysSnapshots) {
+        await this.delete(snapshot.id);
+      }
       const timestamp = (/* @__PURE__ */ new Date()).toISOString();
       const messages = [{ role: "user", content: JSON.stringify(profile) }];
       const result = await this.client.add(messages, {
         user_id: this.userId,
+        agent_id: _Mem0Client.PROFILE_AGENT_ID,
         infer: false,
         // Store raw JSON without semantic extraction
         metadata: {
@@ -38184,7 +38319,8 @@ var Mem0Client = class {
   async getProfileHistory(since, limit) {
     try {
       const response = await this.client.getAll({
-        user_id: this.userId
+        user_id: this.userId,
+        agent_id: _Mem0Client.PROFILE_AGENT_ID
       });
       const results = this.extractResults(response);
       let snapshots = results.filter((r) => r.metadata?.type === "profile-snapshot").map((r) => {
@@ -38277,9 +38413,14 @@ var Mem0Client = class {
     const summaries = await this.getSummaries(scope, void 0, 1);
     return summaries.length > 0 ? summaries[0] : null;
   }
-  // --- Search Memory Storage (for perplexity-search) ---
+  static {
+    // --- Search Memory Storage (for perplexity-search) ---
+    // Search results use agent_id: 'perplexity' to partition from regular memories
+    this.PERPLEXITY_AGENT_ID = "perplexity";
+  }
   /**
    * Stores a search query and result summary.
+   * Uses agent_id 'perplexity' to partition from regular memories.
    */
   async storeSearchResult(query, summary) {
     try {
@@ -38287,6 +38428,7 @@ var Mem0Client = class {
       const messages = [{ role: "user", content }];
       const result = await this.client.add(messages, {
         user_id: this.userId,
+        agent_id: _Mem0Client.PERPLEXITY_AGENT_ID,
         metadata: {
           type: "search",
           query,
@@ -38304,15 +38446,17 @@ var Mem0Client = class {
   }
   /**
    * Gets relevant context for a search query from past searches.
+   * Searches within the perplexity partition only.
    */
   async getSearchContext(query, limit = 3) {
     try {
       const response = await this.client.search(query, {
         user_id: this.userId,
+        agent_id: _Mem0Client.PERPLEXITY_AGENT_ID,
         limit
       });
       const results = this.extractResults(response);
-      return results.filter((r) => r.metadata?.type === "search").map((r) => r.memory);
+      return results.map((r) => r.memory);
     } catch (error2) {
       console.warn("Failed to get search context:", error2);
       return [];
@@ -38425,12 +38569,12 @@ ${searchContext.join("\n")}`;
 };
 
 // plugins/perplexity-search/src/startup.ts
-var fs3 = __toESM(require("fs/promises"));
-var path3 = __toESM(require("path"));
-var os2 = __toESM(require("os"));
+var fs4 = __toESM(require("fs/promises"));
+var path4 = __toESM(require("path"));
+var os3 = __toESM(require("os"));
 async function checkConfig2() {
-  const configPath = path3.join(
-    os2.homedir(),
+  const configPath = path4.join(
+    os3.homedir(),
     ".claude",
     "perplexity-search",
     "config.json"
@@ -38443,7 +38587,7 @@ async function checkConfig2() {
     };
   }
   try {
-    const content = await fs3.readFile(configPath, "utf-8");
+    const content = await fs4.readFile(configPath, "utf-8");
     const config2 = JSON.parse(content);
     if (config2.apiKey) {
       return {
@@ -40087,10 +40231,10 @@ async function runSetupWizard() {
       return true;
     }
   });
-  const configDir = path4.join(os3.homedir(), ".claude", "perplexity-search");
-  const configPath = path4.join(configDir, "config.json");
-  await fs4.mkdir(configDir, { recursive: true });
-  await fs4.writeFile(
+  const configDir = path5.join(os4.homedir(), ".claude", "perplexity-search");
+  const configPath = path5.join(configDir, "config.json");
+  await fs5.mkdir(configDir, { recursive: true });
+  await fs5.writeFile(
     configPath,
     JSON.stringify({ apiKey: apiKey.trim(), defaultMaxResults: 5 }, null, 2)
   );
@@ -40100,17 +40244,17 @@ async function runSetupWizard() {
     default: true
   });
   if (installSkill) {
-    const skillsDir = path4.join(os3.homedir(), ".claude", "skills");
-    const skillSource = path4.join(
+    const skillsDir = path5.join(os4.homedir(), ".claude", "skills");
+    const skillSource = path5.join(
       process.cwd(),
       "skills",
       "using-perplexity-for-context",
       "SKILL.md"
     );
-    const skillDest = path4.join(skillsDir, "using-perplexity-for-context.md");
+    const skillDest = path5.join(skillsDir, "using-perplexity-for-context.md");
     try {
-      await fs4.mkdir(skillsDir, { recursive: true });
-      await fs4.copyFile(skillSource, skillDest);
+      await fs5.mkdir(skillsDir, { recursive: true });
+      await fs5.copyFile(skillSource, skillDest);
       console.error("\u2705 Skill file installed to", skillDest);
     } catch (error2) {
       console.error("\u26A0\uFE0F  Could not install skill file:", error2.message);
@@ -40122,12 +40266,12 @@ async function runSetupWizard() {
     default: true
   });
   if (updateMcpConfig) {
-    const claudeConfigPath = path4.join(os3.homedir(), ".claude.json");
-    const serverPath = path4.join(process.cwd(), "dist", "index.js");
+    const claudeConfigPath = path5.join(os4.homedir(), ".claude.json");
+    const serverPath = path5.join(process.cwd(), "dist", "index.js");
     try {
       let claudeConfig = {};
       try {
-        const existing = await fs4.readFile(claudeConfigPath, "utf-8");
+        const existing = await fs5.readFile(claudeConfigPath, "utf-8");
         claudeConfig = JSON.parse(existing);
       } catch {
       }
@@ -40141,11 +40285,11 @@ async function runSetupWizard() {
       };
       const backupPath = claudeConfigPath + ".backup";
       try {
-        await fs4.copyFile(claudeConfigPath, backupPath);
+        await fs5.copyFile(claudeConfigPath, backupPath);
         console.error("\u{1F4C1} Backup created at", backupPath);
       } catch {
       }
-      await fs4.writeFile(claudeConfigPath, JSON.stringify(claudeConfig, null, 2));
+      await fs5.writeFile(claudeConfigPath, JSON.stringify(claudeConfig, null, 2));
       console.error("\u2705 MCP config updated at", claudeConfigPath);
     } catch (error2) {
       console.error("\u26A0\uFE0F  Could not update MCP config:", error2.message);
@@ -40179,8 +40323,8 @@ async function main() {
     process.exit(1);
   }
   const apiKey = configStatus.apiKey;
-  const profilePath = path4.join(
-    os3.homedir(),
+  const profilePath = path5.join(
+    os4.homedir(),
     ".config",
     "brain-jar",
     "user-profile.json"
