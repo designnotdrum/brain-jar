@@ -122,7 +122,9 @@ All plugins share the same user profile and memory infrastructure. Install share
 - **Version history** tracks diagram evolution
 - **Bundled dependencies** for instant marketplace install
 
-### pattern-radar v0.1.2
+### pattern-radar v0.2.0
+- **Subagent-driven digest** with Haiku generating personalized narratives
+- **Serendipity mode** surfaces unexpected discoveries (wildcards) by default
 - **6 MCP tools** for trend scanning and pattern detection
 - **HN + GitHub** real-time scanning
 - **Profile-aware relevance** scores trends to your domains

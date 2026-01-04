@@ -38,7 +38,7 @@ async function main(): Promise<void> {
   // Create MCP server
   const server = new McpServer({
     name: 'pattern-radar',
-    version: '0.1.2',
+    version: '0.2.0',
   });
 
   // --- Pattern Radar Tools ---
