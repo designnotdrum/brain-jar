@@ -4,6 +4,7 @@
  */
 
 import { Memory, ActivitySummary, UserProfile, ProfileSnapshot } from './types';
+import { getInstructions } from './instructions';
 
 // Mem0 SDK types (simplified)
 interface Mem0Memory {
@@ -54,7 +55,7 @@ export class Mem0Client {
   async add(
     content: string,
     metadata: Record<string, unknown> = {},
-    options?: { agentId?: string }
+    options?: { agentId?: string; skipInstructions?: boolean }
   ): Promise<string> {
     // v2 API: add() expects messages array as first param
     const messages = [{ role: 'user', content }];
@@ -65,6 +66,11 @@ export class Mem0Client {
     // Add agent_id for partitioning if specified
     if (options?.agentId) {
       addOptions.agent_id = options.agentId;
+    }
+    // Add custom instructions for memory filtering (only for regular memories)
+    // Skip instructions for partitioned data (agentId) or when explicitly requested
+    if (!options?.skipInstructions && !options?.agentId) {
+      addOptions.instructions = getInstructions();
     }
     const result = await this.client.add(messages, addOptions);
     // v2 returns array with event_id for async processing, or id for sync

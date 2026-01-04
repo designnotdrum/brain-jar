@@ -20,3 +20,6 @@ export {
 
 // Mem0 client
 export { Mem0Client } from './mem0-client';
+
+// Instructions
+export { getInstructions, USER_INSTRUCTIONS_PATH, DEFAULT_INSTRUCTIONS } from './instructions';
