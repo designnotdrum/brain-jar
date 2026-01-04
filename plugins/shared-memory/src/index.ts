@@ -758,6 +758,66 @@ async function main(): Promise<void> {
     }
   );
 
+  server.tool(
+    'get_memory_stats',
+    'Get memory statistics for health checks (counts by scope, tag, and date range)',
+    {},
+    async () => {
+      const localStats = localStore.getStats();
+
+      // Get Mem0 stats if configured
+      let mem0Stats: { total: number; by_agent: Record<string, number> } | null = null;
+      let profileSnapshots = 0;
+
+      if (mem0Client) {
+        try {
+          // Parallel fetch - allMem0 gets everything, others get partitioned data
+          const [allMem0, profileMem0, perplexityMem0] = await Promise.all([
+            mem0Client.getAll(),
+            mem0Client.getAll({ agentId: 'profile-mgr' }),
+            mem0Client.getAll({ agentId: 'perplexity' }),
+          ]);
+
+          const total = allMem0.length;
+          const profileCount = profileMem0.length;
+          const perplexityCount = perplexityMem0.length;
+          // Regular memories = total minus partitioned
+          const sharedMemoryCount = total - profileCount - perplexityCount;
+
+          mem0Stats = {
+            total,
+            by_agent: {
+              'shared-memory': sharedMemoryCount,
+              'profile-mgr': profileCount,
+              'perplexity': perplexityCount,
+            },
+          };
+          profileSnapshots = profileCount;
+        } catch (error) {
+          console.error('[shared-memory] Failed to get Mem0 stats:', error);
+        }
+      }
+
+      const stats = {
+        local: localStats,
+        mem0: mem0Stats,
+        health: {
+          profile_snapshots: profileSnapshots,
+          mem0_configured: !!mem0Client,
+        },
+      };
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify(stats, null, 2),
+          },
+        ],
+      };
+    }
+  );
+
   // Connect transport
   const transport = new StdioServerTransport();
   await server.connect(transport);

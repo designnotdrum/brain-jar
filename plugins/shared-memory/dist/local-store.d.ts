@@ -34,6 +34,18 @@ export declare class LocalStore {
      * Get all unique scopes with activity.
      */
     getActiveScopes(): string[];
+    /**
+     * Get memory statistics for health checks.
+     */
+    getStats(): {
+        total: number;
+        by_scope: Record<string, number>;
+        by_tag: Record<string, number>;
+        date_range: {
+            oldest: string | null;
+            newest: string | null;
+        };
+    };
     close(): void;
     private toMemory;
 }

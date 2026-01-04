@@ -184,6 +184,65 @@ export class LocalStore {
     return rows.map((r) => r.scope);
   }
 
+  /**
+   * Get memory statistics for health checks.
+   */
+  getStats(): {
+    total: number;
+    by_scope: Record<string, number>;
+    by_tag: Record<string, number>;
+    date_range: { oldest: string | null; newest: string | null };
+  } {
+    // Total count
+    const totalStmt = this.db.prepare('SELECT COUNT(*) as count FROM memories');
+    const total = (totalStmt.get() as { count: number }).count;
+
+    // By scope
+    const scopeStmt = this.db.prepare(
+      'SELECT scope, COUNT(*) as count FROM memories GROUP BY scope'
+    );
+    const scopeRows = scopeStmt.all() as { scope: string; count: number }[];
+    const by_scope: Record<string, number> = {};
+    for (const row of scopeRows) {
+      by_scope[row.scope] = row.count;
+    }
+
+    // By tag (approximate - counts memories containing each tag)
+    const allStmt = this.db.prepare('SELECT tags FROM memories');
+    const allRows = allStmt.all() as { tags: string }[];
+    const by_tag: Record<string, number> = {};
+    for (const row of allRows) {
+      try {
+        const tags = JSON.parse(row.tags) as string[];
+        for (const tag of tags) {
+          by_tag[tag] = (by_tag[tag] || 0) + 1;
+        }
+      } catch {
+        // Skip invalid JSON
+      }
+    }
+
+    // Date range
+    const oldestStmt = this.db.prepare(
+      'SELECT created_at FROM memories ORDER BY created_at ASC LIMIT 1'
+    );
+    const newestStmt = this.db.prepare(
+      'SELECT created_at FROM memories ORDER BY created_at DESC LIMIT 1'
+    );
+    const oldestRow = oldestStmt.get() as { created_at: string } | undefined;
+    const newestRow = newestStmt.get() as { created_at: string } | undefined;
+
+    return {
+      total,
+      by_scope,
+      by_tag,
+      date_range: {
+        oldest: oldestRow?.created_at.split('T')[0] || null,
+        newest: newestRow?.created_at.split('T')[0] || null,
+      },
+    };
+  }
+
   close(): void {
     this.db.close();
   }

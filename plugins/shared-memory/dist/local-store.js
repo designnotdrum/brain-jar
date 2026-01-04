@@ -164,6 +164,50 @@ class LocalStore {
         const rows = stmt.all();
         return rows.map((r) => r.scope);
     }
+    /**
+     * Get memory statistics for health checks.
+     */
+    getStats() {
+        // Total count
+        const totalStmt = this.db.prepare('SELECT COUNT(*) as count FROM memories');
+        const total = totalStmt.get().count;
+        // By scope
+        const scopeStmt = this.db.prepare('SELECT scope, COUNT(*) as count FROM memories GROUP BY scope');
+        const scopeRows = scopeStmt.all();
+        const by_scope = {};
+        for (const row of scopeRows) {
+            by_scope[row.scope] = row.count;
+        }
+        // By tag (approximate - counts memories containing each tag)
+        const allStmt = this.db.prepare('SELECT tags FROM memories');
+        const allRows = allStmt.all();
+        const by_tag = {};
+        for (const row of allRows) {
+            try {
+                const tags = JSON.parse(row.tags);
+                for (const tag of tags) {
+                    by_tag[tag] = (by_tag[tag] || 0) + 1;
+                }
+            }
+            catch {
+                // Skip invalid JSON
+            }
+        }
+        // Date range
+        const oldestStmt = this.db.prepare('SELECT created_at FROM memories ORDER BY created_at ASC LIMIT 1');
+        const newestStmt = this.db.prepare('SELECT created_at FROM memories ORDER BY created_at DESC LIMIT 1');
+        const oldestRow = oldestStmt.get();
+        const newestRow = newestStmt.get();
+        return {
+            total,
+            by_scope,
+            by_tag,
+            date_range: {
+                oldest: oldestRow?.created_at.split('T')[0] || null,
+                newest: newestRow?.created_at.split('T')[0] || null,
+            },
+        };
+    }
     close() {
         this.db.close();
     }
