@@ -60001,7 +60001,7 @@ async function main() {
   }
   const server = new McpServer({
     name: "shared-memory",
-    version: "2.1.1"
+    version: "2.1.2"
   });
   server.tool(
     "add_memory",
