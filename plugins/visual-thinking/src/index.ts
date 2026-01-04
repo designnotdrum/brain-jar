@@ -78,7 +78,7 @@ async function main(): Promise<void> {
   // Create MCP server
   const server = new McpServer({
     name: 'visual-thinking',
-    version: '0.3.2',
+    version: '0.3.3',
   });
 
   // --- Diagram Tools ---

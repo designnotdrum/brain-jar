@@ -115,9 +115,10 @@ All plugins share the same user profile and memory infrastructure. Install share
 - **Skill-level adaptation** from beginner to expert
 - **OpenAPI/TypeScript output** from captured traffic
 
-### visual-thinking v0.3.2
+### visual-thinking v0.3.3
 - **Auto-open on create** - diagrams now open in draw.io immediately when created (no extra export step)
 - **Expanded trigger patterns** - hookify now catches "brainstorm", "let's design", "how should this work" and more
+- **Project-aware scope** - diagrams now use detectScope() as default instead of 'global'
 - **Optional Haiku drafting** - skill can use subagent to draft diagrams from complex conversations
 - **Hookify integration** - Auto-suggests diagrams when discussing architecture, flows, or data models
 - **One-click draw.io integration** - Mermaid diagrams converted to editable draw.io shapes
