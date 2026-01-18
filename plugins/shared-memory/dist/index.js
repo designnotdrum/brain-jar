@@ -43,6 +43,7 @@ const core_1 = require("@brain-jar/core");
 const local_store_1 = require("./local-store");
 const summary_manager_1 = require("./summary-manager");
 const profile_1 = require("./profile");
+const chess_timer_1 = require("./chess-timer");
 const LOCAL_DB_PATH = path.join(os.homedir(), '.config', 'brain-jar', 'local.db');
 async function runSetup() {
     const { input } = await Promise.resolve().then(() => __importStar(require('@inquirer/prompts')));
@@ -81,6 +82,9 @@ async function main() {
     const config = isConfigured ? (0, core_1.loadConfig)() : null;
     // Local store works without Mem0 config
     const localStore = new local_store_1.LocalStore(LOCAL_DB_PATH);
+    // Chess timer stores (use same DB for simplicity)
+    const sessionStore = new chess_timer_1.SessionStore(LOCAL_DB_PATH);
+    const predictor = new chess_timer_1.Predictor(sessionStore);
     // Mem0 client only if configured
     const mem0Client = config ? new core_1.Mem0Client(config.mem0_api_key) : null;
     // Profile manager and inference engine (always available)
@@ -661,6 +665,106 @@ async function main() {
                     text: JSON.stringify(stats, null, 2),
                 },
             ],
+        };
+    });
+    // --- Chess Timer Tools ---
+    server.tool('start_work_session', 'Start tracking time for a coding session. Returns estimate if similar work exists.', {
+        feature_id: zod_1.z.string().optional().describe('Branch name or feature identifier'),
+        description: zod_1.z.string().optional().describe('What you are building'),
+        work_type: zod_1.z.enum(['feature', 'bugfix', 'refactor', 'docs', 'other']).optional().describe('Type of work'),
+        scope: zod_1.z.string().optional().describe('Project scope'),
+    }, async (args) => {
+        const scope = args.scope || (0, core_1.detectScope)();
+        const feature_id = args.feature_id || `work-${Date.now()}`;
+        const description = args.description || 'Coding session';
+        // Check for existing active session
+        const existing = sessionStore.getActiveSession(scope);
+        if (existing) {
+            return {
+                content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            message: 'Session already active',
+                            session: {
+                                id: existing.id,
+                                feature_id: existing.feature_id,
+                                status: existing.status,
+                                total_active_seconds: existing.total_active_seconds,
+                            },
+                        }, null, 2),
+                    }],
+            };
+        }
+        // Create new session
+        const session = sessionStore.createSession({
+            feature_id,
+            description,
+            scope,
+            work_type: args.work_type,
+        });
+        // Get estimate for similar work
+        const estimate = predictor.getEstimate({
+            work_type: args.work_type,
+            description,
+        });
+        // Emit memory for cross-plugin visibility
+        localStore.add({
+            content: `Started work session: ${description} (${feature_id})`,
+            scope,
+            tags: ['chess-timer', 'session-start', args.work_type || 'other'],
+        });
+        return {
+            content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        message: 'Session started',
+                        session: {
+                            id: session.id,
+                            feature_id: session.feature_id,
+                            description: session.feature_description,
+                            started_at: session.started_at.toISOString(),
+                        },
+                        estimate: estimate.sample_count > 0 ? {
+                            message: estimate.message,
+                            confidence: estimate.confidence,
+                            similar_count: estimate.sample_count,
+                        } : null,
+                    }, null, 2),
+                }],
+        };
+    });
+    server.tool('get_active_session', 'Get the current active or paused work session', {
+        scope: zod_1.z.string().optional().describe('Project scope (auto-detects if omitted)'),
+    }, async (args) => {
+        const scope = args.scope || (0, core_1.detectScope)();
+        const session = sessionStore.getActiveSession(scope);
+        if (!session) {
+            return {
+                content: [{
+                        type: 'text',
+                        text: 'No active session.',
+                    }],
+            };
+        }
+        const segments = sessionStore.getSegments(session.id);
+        const currentSeconds = session.status === 'active'
+            ? session.total_active_seconds + Math.floor((Date.now() - segments[segments.length - 1].started_at.getTime()) / 1000)
+            : session.total_active_seconds;
+        return {
+            content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        session: {
+                            id: session.id,
+                            feature_id: session.feature_id,
+                            description: session.feature_description,
+                            status: session.status,
+                            started_at: session.started_at.toISOString(),
+                            total_active_seconds: currentSeconds,
+                            segment_count: segments.length,
+                        },
+                    }, null, 2),
+                }],
         };
     });
     // Connect transport

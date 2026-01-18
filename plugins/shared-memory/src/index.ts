@@ -20,6 +20,8 @@ import { LocalStore } from './local-store';
 import { SummaryManager } from './summary-manager';
 import { AddMemoryInput, SearchMemoryInput, ListMemoriesInput } from './types';
 import { ProfileManager, InferenceEngine } from './profile';
+import { SessionStore, Predictor } from './chess-timer';
+import type { WorkType } from './chess-timer';
 
 const LOCAL_DB_PATH = path.join(os.homedir(), '.config', 'brain-jar', 'local.db');
 
@@ -67,6 +69,10 @@ async function main(): Promise<void> {
 
   // Local store works without Mem0 config
   const localStore = new LocalStore(LOCAL_DB_PATH);
+
+  // Chess timer stores (use same DB for simplicity)
+  const sessionStore = new SessionStore(LOCAL_DB_PATH);
+  const predictor = new Predictor(sessionStore);
 
   // Mem0 client only if configured
   const mem0Client = config ? new Mem0Client(config.mem0_api_key) : null;
@@ -815,6 +821,127 @@ async function main(): Promise<void> {
             text: JSON.stringify(stats, null, 2),
           },
         ],
+      };
+    }
+  );
+
+  // --- Chess Timer Tools ---
+
+  server.tool(
+    'start_work_session',
+    'Start tracking time for a coding session. Returns estimate if similar work exists.',
+    {
+      feature_id: z.string().optional().describe('Branch name or feature identifier'),
+      description: z.string().optional().describe('What you are building'),
+      work_type: z.enum(['feature', 'bugfix', 'refactor', 'docs', 'other']).optional().describe('Type of work'),
+      scope: z.string().optional().describe('Project scope'),
+    },
+    async (args: { feature_id?: string; description?: string; work_type?: WorkType; scope?: string }) => {
+      const scope = args.scope || detectScope();
+      const feature_id = args.feature_id || `work-${Date.now()}`;
+      const description = args.description || 'Coding session';
+
+      // Check for existing active session
+      const existing = sessionStore.getActiveSession(scope);
+      if (existing) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              message: 'Session already active',
+              session: {
+                id: existing.id,
+                feature_id: existing.feature_id,
+                status: existing.status,
+                total_active_seconds: existing.total_active_seconds,
+              },
+            }, null, 2),
+          }],
+        };
+      }
+
+      // Create new session
+      const session = sessionStore.createSession({
+        feature_id,
+        description,
+        scope,
+        work_type: args.work_type,
+      });
+
+      // Get estimate for similar work
+      const estimate = predictor.getEstimate({
+        work_type: args.work_type,
+        description,
+      });
+
+      // Emit memory for cross-plugin visibility
+      localStore.add({
+        content: `Started work session: ${description} (${feature_id})`,
+        scope,
+        tags: ['chess-timer', 'session-start', args.work_type || 'other'],
+      });
+
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({
+            message: 'Session started',
+            session: {
+              id: session.id,
+              feature_id: session.feature_id,
+              description: session.feature_description,
+              started_at: session.started_at.toISOString(),
+            },
+            estimate: estimate.sample_count > 0 ? {
+              message: estimate.message,
+              confidence: estimate.confidence,
+              similar_count: estimate.sample_count,
+            } : null,
+          }, null, 2),
+        }],
+      };
+    }
+  );
+
+  server.tool(
+    'get_active_session',
+    'Get the current active or paused work session',
+    {
+      scope: z.string().optional().describe('Project scope (auto-detects if omitted)'),
+    },
+    async (args: { scope?: string }) => {
+      const scope = args.scope || detectScope();
+      const session = sessionStore.getActiveSession(scope);
+
+      if (!session) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: 'No active session.',
+          }],
+        };
+      }
+
+      const segments = sessionStore.getSegments(session.id);
+      const currentSeconds = session.status === 'active'
+        ? session.total_active_seconds + Math.floor((Date.now() - segments[segments.length - 1].started_at.getTime()) / 1000)
+        : session.total_active_seconds;
+
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({
+            session: {
+              id: session.id,
+              feature_id: session.feature_id,
+              description: session.feature_description,
+              status: session.status,
+              started_at: session.started_at.toISOString(),
+              total_active_seconds: currentSeconds,
+              segment_count: segments.length,
+            },
+          }, null, 2),
+        }],
       };
     }
   );
