@@ -92,13 +92,12 @@ All plugins share the same user profile and memory infrastructure. Install share
 
 ## Highlights
 
-### shared-memory v2.1.2
+### shared-memory v2.2.0
+- **Chess timer** - Self-calibrating time estimation that tracks how long you actually spend coding, predicts future feature duration based on complexity and work type
+- **7 new MCP tools** - start_work_session, pause/resume/complete, get_work_estimate, list_work_sessions, get_active_session
+- **Confidence levels** - Predictions improve with more samples (low <5, medium 5-14, high 15+)
 - **Auto-detect project scope** - add_memory now uses detectScope() as default instead of 'global'
-- **Entity partitioning** isolates profile snapshots and search queries from regular memories
-- **Profile pruning** keeps one snapshot per day, with automatic migration
-- **Custom Mem0 instructions** filter what gets stored (with user override)
-- **Memory stats tool** for health checks and namespace counts
-- **16 MCP tools** for memory, profiles, summaries, and diagnostics
+- **23 MCP tools** for memory, profiles, summaries, diagnostics, and work sessions
 
 ### perplexity-search v2.0.2
 - **Subagent pattern with TL;DR** - skill shows condensed summary + full Perplexity response

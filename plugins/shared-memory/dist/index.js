@@ -121,7 +121,7 @@ async function main() {
     // Create MCP server
     const server = new mcp_js_1.McpServer({
         name: 'shared-memory',
-        version: '2.1.2',
+        version: '2.2.0',
     });
     // Register tools
     server.tool('add_memory', 'Store a memory with enriched context', {
@@ -926,6 +926,93 @@ async function main() {
                             },
                             comparison: comparison || null,
                         }, null, 2),
+                    }],
+            };
+        }
+        catch (error) {
+            return {
+                content: [{
+                        type: 'text',
+                        text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    }],
+            };
+        }
+    });
+    server.tool('get_work_estimate', 'Get a time estimate for upcoming work based on similar past sessions', {
+        description: zod_1.z.string().optional().describe('What you plan to build'),
+        work_type: zod_1.z.enum(['feature', 'bugfix', 'refactor', 'docs', 'other']).optional().describe('Type of work'),
+        complexity_rating: zod_1.z.number().min(1).max(5).optional().describe('Expected complexity (1-5)'),
+    }, async (args) => {
+        try {
+            const estimate = predictor.getEstimate({
+                description: args.description,
+                work_type: args.work_type,
+                complexity_rating: args.complexity_rating,
+            });
+            return {
+                content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            estimate: {
+                                message: estimate.message,
+                                confidence: estimate.confidence,
+                                sample_count: estimate.sample_count,
+                                range_seconds: {
+                                    min: estimate.min_seconds,
+                                    max: estimate.max_seconds,
+                                },
+                                range_minutes: {
+                                    min: Math.round(estimate.min_seconds / 60),
+                                    max: Math.round(estimate.max_seconds / 60),
+                                },
+                                similar_sessions: estimate.similar_sessions.map((s) => ({
+                                    feature_id: s.feature_id,
+                                    description: s.description,
+                                    minutes: Math.round(s.duration_seconds / 60),
+                                })),
+                            },
+                        }, null, 2),
+                    }],
+            };
+        }
+        catch (error) {
+            return {
+                content: [{
+                        type: 'text',
+                        text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    }],
+            };
+        }
+    });
+    server.tool('list_work_sessions', 'List past work sessions', {
+        scope: zod_1.z.string().optional().describe('Filter by project scope'),
+        status: zod_1.z.enum(['active', 'paused', 'completed', 'abandoned']).optional().describe('Filter by status'),
+        limit: zod_1.z.number().optional().describe('Maximum results (default: 10)'),
+    }, async (args) => {
+        try {
+            const sessions = sessionStore.listSessions({
+                scope: args.scope,
+                status: args.status,
+                limit: args.limit || 10,
+            });
+            if (sessions.length === 0) {
+                return {
+                    content: [{ type: 'text', text: 'No sessions found.' }],
+                };
+            }
+            const formatted = sessions.map((s) => ({
+                id: s.id,
+                feature_id: s.feature_id,
+                description: s.feature_description,
+                status: s.status,
+                minutes: Math.round(s.total_active_seconds / 60),
+                started_at: s.started_at.toISOString().split('T')[0],
+                completed_at: s.completed_at?.toISOString().split('T')[0] || null,
+            }));
+            return {
+                content: [{
+                        type: 'text',
+                        text: JSON.stringify({ sessions: formatted }, null, 2),
                     }],
             };
         }

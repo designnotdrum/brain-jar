@@ -3226,8 +3226,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path10) {
-      let input = path10;
+    function removeDotSegments(path11) {
+      let input = path11;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3426,8 +3426,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path10, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path10 && path10 !== "/" ? path10 : void 0;
+        const [path11, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path11 && path11 !== "/" ? path11 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -6780,12 +6780,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs8, exportName) {
+    function addFormats(ajv, list, fs9, exportName) {
       var _a2;
       var _b;
       (_a2 = (_b = ajv.opts.code).formats) !== null && _a2 !== void 0 ? _a2 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs8[f]);
+        ajv.addFormat(f, fs9[f]);
     }
     module2.exports = exports2 = formatsPlugin;
     Object.defineProperty(exports2, "__esModule", { value: true });
@@ -15640,11 +15640,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path10) {
-      if (!path10 || typeof path10 !== "string") {
+    function lookup(path11) {
+      if (!path11 || typeof path11 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path10).toLowerCase().substr(1);
+      var extension2 = extname("x." + path11).toLowerCase().substr(1);
       if (!extension2) {
         return false;
       }
@@ -16749,13 +16749,13 @@ var require_form_data = __commonJS({
     "use strict";
     var CombinedStream = require_combined_stream();
     var util2 = require("util");
-    var path10 = require("path");
+    var path11 = require("path");
     var http = require("http");
     var https = require("https");
     var parseUrl = require("url").parse;
-    var fs8 = require("fs");
+    var fs9 = require("fs");
     var Stream = require("stream").Stream;
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     var mime = require_mime_types();
     var asynckit = require_asynckit();
     var setToStringTag = require_es_set_tostringtag();
@@ -16820,7 +16820,7 @@ var require_form_data = __commonJS({
         if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
           callback(null, value.end + 1 - (value.start ? value.start : 0));
         } else {
-          fs8.stat(value.path, function(err, stat) {
+          fs9.stat(value.path, function(err, stat) {
             if (err) {
               callback(err);
               return;
@@ -16877,11 +16877,11 @@ var require_form_data = __commonJS({
     FormData2.prototype._getContentDisposition = function(value, options) {
       var filename;
       if (typeof options.filepath === "string") {
-        filename = path10.normalize(options.filepath).replace(/\\/g, "/");
+        filename = path11.normalize(options.filepath).replace(/\\/g, "/");
       } else if (options.filename || value && (value.name || value.path)) {
-        filename = path10.basename(options.filename || value && (value.name || value.path));
+        filename = path11.basename(options.filename || value && (value.name || value.path));
       } else if (value && value.readable && hasOwn(value, "httpVersion")) {
-        filename = path10.basename(value.client._httpMessage.path || "");
+        filename = path11.basename(value.client._httpMessage.path || "");
       }
       if (filename) {
         return 'filename="' + filename + '"';
@@ -16961,7 +16961,7 @@ var require_form_data = __commonJS({
       return Buffer.concat([dataBuffer, Buffer.from(this._lastBoundary())]);
     };
     FormData2.prototype._generateBoundary = function() {
-      this._boundary = "--------------------------" + crypto2.randomBytes(12).toString("hex");
+      this._boundary = "--------------------------" + crypto3.randomBytes(12).toString("hex");
     };
     FormData2.prototype.getLengthSync = function() {
       var knownLength = this._overheadLength + this._valueLength;
@@ -18896,9 +18896,9 @@ var require_axios = __commonJS({
     function removeBrackets(key) {
       return utils$1.endsWith(key, "[]") ? key.slice(0, -2) : key;
     }
-    function renderKey(path10, key, dots) {
-      if (!path10) return key;
-      return path10.concat(key).map(function each(token, i) {
+    function renderKey(path11, key, dots) {
+      if (!path11) return key;
+      return path11.concat(key).map(function each(token, i) {
         token = removeBrackets(token);
         return !dots && i ? "[" + token + "]" : token;
       }).join(dots ? "." : "");
@@ -18943,9 +18943,9 @@ var require_axios = __commonJS({
         }
         return value;
       }
-      function defaultVisitor(value, key, path10) {
+      function defaultVisitor(value, key, path11) {
         let arr = value;
-        if (value && !path10 && typeof value === "object") {
+        if (value && !path11 && typeof value === "object") {
           if (utils$1.endsWith(key, "{}")) {
             key = metaTokens ? key : key.slice(0, -2);
             value = JSON.stringify(value);
@@ -18964,7 +18964,7 @@ var require_axios = __commonJS({
         if (isVisitable(value)) {
           return true;
         }
-        formData.append(renderKey(path10, key, dots), convertValue(value));
+        formData.append(renderKey(path11, key, dots), convertValue(value));
         return false;
       }
       const stack = [];
@@ -18973,10 +18973,10 @@ var require_axios = __commonJS({
         convertValue,
         isVisitable
       });
-      function build(value, path10) {
+      function build(value, path11) {
         if (utils$1.isUndefined(value)) return;
         if (stack.indexOf(value) !== -1) {
-          throw Error("Circular reference detected in " + path10.join("."));
+          throw Error("Circular reference detected in " + path11.join("."));
         }
         stack.push(value);
         utils$1.forEach(value, function each(el, key) {
@@ -18984,11 +18984,11 @@ var require_axios = __commonJS({
             formData,
             el,
             utils$1.isString(key) ? key.trim() : key,
-            path10,
+            path11,
             exposedHelpers
           );
           if (result === true) {
-            build(el, path10 ? path10.concat(key) : [key]);
+            build(el, path11 ? path11.concat(key) : [key]);
           }
         });
         stack.pop();
@@ -19152,7 +19152,7 @@ var require_axios = __commonJS({
     };
     function toURLEncodedForm(data, options) {
       return toFormData(data, new platform.classes.URLSearchParams(), Object.assign({
-        visitor: function(value, key, path10, helpers) {
+        visitor: function(value, key, path11, helpers) {
           if (platform.isNode && utils$1.isBuffer(value)) {
             this.append(key, value.toString("base64"));
             return false;
@@ -19179,11 +19179,11 @@ var require_axios = __commonJS({
       return obj;
     }
     function formDataToJSON(formData) {
-      function buildPath(path10, value, target, index) {
-        let name = path10[index++];
+      function buildPath(path11, value, target, index) {
+        let name = path11[index++];
         if (name === "__proto__") return true;
         const isNumericKey = Number.isFinite(+name);
-        const isLast = index >= path10.length;
+        const isLast = index >= path11.length;
         name = !name && utils$1.isArray(target) ? target.length : name;
         if (isLast) {
           if (utils$1.hasOwnProp(target, name)) {
@@ -19196,7 +19196,7 @@ var require_axios = __commonJS({
         if (!target[name] || !utils$1.isObject(target[name])) {
           target[name] = [];
         }
-        const result = buildPath(path10, value, target[name], index);
+        const result = buildPath(path11, value, target[name], index);
         if (result && utils$1.isArray(target[name])) {
           target[name] = arrayToObject(target[name]);
         }
@@ -20254,9 +20254,9 @@ var require_axios = __commonJS({
           auth = urlUsername + ":" + urlPassword;
         }
         auth && headers.delete("authorization");
-        let path10;
+        let path11;
         try {
-          path10 = buildURL(
+          path11 = buildURL(
             parsed.pathname + parsed.search,
             config2.params,
             config2.paramsSerializer
@@ -20274,7 +20274,7 @@ var require_axios = __commonJS({
           false
         );
         const options = {
-          path: path10,
+          path: path11,
           method,
           headers: headers.toJSON(),
           agents: { http: config2.httpAgent, https: config2.httpsAgent },
@@ -20532,10 +20532,10 @@ var require_axios = __commonJS({
     var cookies = platform.hasStandardBrowserEnv ? (
       // Standard browser envs support document.cookie
       {
-        write(name, value, expires, path10, domain2, secure) {
+        write(name, value, expires, path11, domain2, secure) {
           const cookie = [name + "=" + encodeURIComponent(value)];
           utils$1.isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
-          utils$1.isString(path10) && cookie.push("path=" + path10);
+          utils$1.isString(path11) && cookie.push("path=" + path11);
           utils$1.isString(domain2) && cookie.push("domain=" + domain2);
           secure === true && cookie.push("secure");
           document.cookie = cookie.join("; ");
@@ -30010,10 +30010,10 @@ var require_lib2 = __commonJS({
     exports2.analyse = analyse;
     var detectFile = (filepath, opts = {}) => new Promise((resolve2, reject) => {
       let fd;
-      const fs8 = (0, node_1.default)();
+      const fs9 = (0, node_1.default)();
       const handler = (err, buffer) => {
         if (fd) {
-          fs8.closeSync(fd);
+          fs9.closeSync(fd);
         }
         if (err) {
           reject(err);
@@ -30025,9 +30025,9 @@ var require_lib2 = __commonJS({
       };
       const sampleSize = (opts === null || opts === void 0 ? void 0 : opts.sampleSize) || 0;
       if (sampleSize > 0) {
-        fd = fs8.openSync(filepath, "r");
+        fd = fs9.openSync(filepath, "r");
         let sample = Buffer.allocUnsafe(sampleSize);
-        fs8.read(fd, sample, 0, sampleSize, opts.offset, (err, bytesRead) => {
+        fs9.read(fd, sample, 0, sampleSize, opts.offset, (err, bytesRead) => {
           if (err) {
             handler(err, null);
           } else {
@@ -30039,22 +30039,22 @@ var require_lib2 = __commonJS({
         });
         return;
       }
-      fs8.readFile(filepath, handler);
+      fs9.readFile(filepath, handler);
     });
     exports2.detectFile = detectFile;
     var detectFileSync = (filepath, opts = {}) => {
-      const fs8 = (0, node_1.default)();
+      const fs9 = (0, node_1.default)();
       if (opts && opts.sampleSize) {
-        const fd = fs8.openSync(filepath, "r");
+        const fd = fs9.openSync(filepath, "r");
         let sample = Buffer.allocUnsafe(opts.sampleSize);
-        const bytesRead = fs8.readSync(fd, sample, 0, opts.sampleSize, opts.offset);
+        const bytesRead = fs9.readSync(fd, sample, 0, opts.sampleSize, opts.offset);
         if (bytesRead < opts.sampleSize) {
           sample = sample.subarray(0, bytesRead);
         }
-        fs8.closeSync(fd);
+        fs9.closeSync(fd);
         return (0, exports2.detect)(sample);
       }
-      return (0, exports2.detect)(fs8.readFileSync(filepath));
+      return (0, exports2.detect)(fs9.readFileSync(filepath));
     };
     exports2.detectFileSync = detectFileSync;
     exports2.default = {
@@ -35381,8 +35381,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path10, errorMaps, issueData } = params;
-  const fullPath = [...path10, ...issueData.path || []];
+  const { data, path: path11, errorMaps, issueData } = params;
+  const fullPath = [...path11, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -35497,11 +35497,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path10, key) {
+  constructor(parent, value, path11, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path10;
+    this._path = path11;
     this._key = key;
   }
   get path() {
@@ -39424,10 +39424,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path10) {
-  if (!path10)
+function getElementAtPath(obj, path11) {
+  if (!path11)
     return obj;
-  return path10.reduce((acc, key) => acc?.[key], obj);
+  return path11.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -39810,11 +39810,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path10, issues) {
+function prefixIssues(path11, issues) {
   return issues.map((iss) => {
     var _a2;
     (_a2 = iss).path ?? (_a2.path = []);
-    iss.path.unshift(path10);
+    iss.path.unshift(path11);
     return iss;
   });
 }
@@ -39997,7 +39997,7 @@ function formatError(error48, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error48, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error49, path10 = []) => {
+  const processError = (error49, path11 = []) => {
     var _a2, _b;
     for (const issue2 of error49.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
@@ -40007,7 +40007,7 @@ function treeifyError(error48, mapper = (issue2) => issue2.message) {
       } else if (issue2.code === "invalid_element") {
         processError({ issues: issue2.issues }, issue2.path);
       } else {
-        const fullpath = [...path10, ...issue2.path];
+        const fullpath = [...path11, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -40039,8 +40039,8 @@ function treeifyError(error48, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path10 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path10) {
+  const path11 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path11) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -52446,13 +52446,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path10 = ref.slice(1).split("/").filter(Boolean);
-  if (path10.length === 0) {
+  const path11 = ref.slice(1).split("/").filter(Boolean);
+  if (path11.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path10[0] === defsKey) {
-    const key = path10[1];
+  if (path11[0] === defsKey) {
+    const key = path11[1];
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -58160,7 +58160,7 @@ var StdioServerTransport = class {
 };
 
 // plugins/shared-memory/src/index.ts
-var path9 = __toESM(require("path"));
+var path10 = __toESM(require("path"));
 var os6 = __toESM(require("os"));
 
 // packages/core/src/config.ts
@@ -59937,8 +59937,458 @@ var InferenceEngine = class {
   }
 };
 
+// plugins/shared-memory/src/chess-timer/session-store.ts
+var import_better_sqlite32 = __toESM(require("better-sqlite3"));
+var crypto2 = __toESM(require("crypto"));
+var fs8 = __toESM(require("fs"));
+var path8 = __toESM(require("path"));
+var SessionStore = class {
+  db;
+  constructor(dbPath) {
+    const dir = path8.dirname(dbPath);
+    if (!fs8.existsSync(dir)) {
+      fs8.mkdirSync(dir, { recursive: true });
+    }
+    this.db = new import_better_sqlite32.default(dbPath);
+    this.init();
+  }
+  init() {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS work_sessions (
+        id TEXT PRIMARY KEY,
+        feature_id TEXT NOT NULL,
+        feature_description TEXT NOT NULL,
+        scope TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active',
+        started_at TEXT NOT NULL,
+        completed_at TEXT,
+        total_active_seconds INTEGER NOT NULL DEFAULT 0,
+        satisfaction INTEGER,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS work_segments (
+        id TEXT PRIMARY KEY,
+        session_id TEXT NOT NULL,
+        started_at TEXT NOT NULL,
+        ended_at TEXT,
+        trigger_start TEXT NOT NULL,
+        trigger_end TEXT,
+        FOREIGN KEY (session_id) REFERENCES work_sessions(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS work_metrics (
+        id TEXT PRIMARY KEY,
+        session_id TEXT NOT NULL,
+        files_touched INTEGER NOT NULL DEFAULT 0,
+        lines_added INTEGER NOT NULL DEFAULT 0,
+        lines_removed INTEGER NOT NULL DEFAULT 0,
+        complexity_rating INTEGER NOT NULL DEFAULT 3,
+        work_type TEXT NOT NULL DEFAULT 'other',
+        recorded_at TEXT NOT NULL,
+        FOREIGN KEY (session_id) REFERENCES work_sessions(id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_sessions_scope ON work_sessions(scope);
+      CREATE INDEX IF NOT EXISTS idx_sessions_status ON work_sessions(status);
+      CREATE INDEX IF NOT EXISTS idx_segments_session ON work_segments(session_id);
+      CREATE INDEX IF NOT EXISTS idx_metrics_session ON work_metrics(session_id);
+    `);
+  }
+  createSession(input) {
+    const id = crypto2.randomUUID();
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const stmt = this.db.prepare(`
+      INSERT INTO work_sessions
+        (id, feature_id, feature_description, scope, status, started_at, total_active_seconds, created_at, updated_at)
+      VALUES (?, ?, ?, ?, 'active', ?, 0, ?, ?)
+    `);
+    stmt.run(id, input.feature_id, input.description, input.scope, now, now, now);
+    this.createSegmentInternal(id, "session_start");
+    if (input.work_type) {
+      this.createMetricsInternal(id, { work_type: input.work_type });
+    }
+    return this.getSession(id);
+  }
+  getSession(id) {
+    const stmt = this.db.prepare("SELECT * FROM work_sessions WHERE id = ?");
+    const row = stmt.get(id);
+    return row ? this.toSession(row) : null;
+  }
+  getActiveSession(scope) {
+    const stmt = this.db.prepare(`
+      SELECT * FROM work_sessions
+      WHERE scope = ? AND status IN ('active', 'paused')
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `);
+    const row = stmt.get(scope);
+    return row ? this.toSession(row) : null;
+  }
+  getSegments(sessionId) {
+    const stmt = this.db.prepare("SELECT * FROM work_segments WHERE session_id = ? ORDER BY started_at");
+    const rows = stmt.all(sessionId);
+    return rows.map((r) => this.toSegment(r));
+  }
+  getMetrics(sessionId) {
+    const stmt = this.db.prepare("SELECT * FROM work_metrics WHERE session_id = ? ORDER BY recorded_at");
+    const rows = stmt.all(sessionId);
+    return rows.map((r) => this.toMetrics(r));
+  }
+  updateSessionStatus(sessionId, status) {
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    if (status === "completed" || status === "abandoned") {
+      const stmt = this.db.prepare(`
+        UPDATE work_sessions
+        SET status = ?, completed_at = ?, updated_at = ?
+        WHERE id = ?
+      `);
+      stmt.run(status, now, now, sessionId);
+    } else {
+      const stmt = this.db.prepare(`
+        UPDATE work_sessions
+        SET status = ?, updated_at = ?
+        WHERE id = ?
+      `);
+      stmt.run(status, now, sessionId);
+    }
+  }
+  updateTotalActiveSeconds(sessionId, totalSeconds) {
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const stmt = this.db.prepare(`
+      UPDATE work_sessions
+      SET total_active_seconds = ?, updated_at = ?
+      WHERE id = ?
+    `);
+    stmt.run(totalSeconds, now, sessionId);
+  }
+  endCurrentSegment(sessionId, triggerEnd) {
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const stmt = this.db.prepare(`
+      UPDATE work_segments
+      SET ended_at = ?, trigger_end = ?
+      WHERE session_id = ? AND ended_at IS NULL
+    `);
+    stmt.run(now, triggerEnd, sessionId);
+  }
+  createNewSegment(sessionId, triggerStart) {
+    return this.createSegmentInternal(sessionId, triggerStart);
+  }
+  listSessions(input) {
+    let query = "SELECT * FROM work_sessions WHERE 1=1";
+    const params = [];
+    if (input.scope) {
+      query += " AND scope = ?";
+      params.push(input.scope);
+    }
+    if (input.status) {
+      query += " AND status = ?";
+      params.push(input.status);
+    }
+    query += " ORDER BY updated_at DESC";
+    if (input.limit) {
+      query += " LIMIT ?";
+      params.push(input.limit);
+    }
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...params);
+    return rows.map((r) => this.toSession(r));
+  }
+  updateSessionNotes(sessionId, notes) {
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const stmt = this.db.prepare(`
+      UPDATE work_sessions
+      SET notes = ?, updated_at = ?
+      WHERE id = ?
+    `);
+    stmt.run(notes, now, sessionId);
+  }
+  updateSessionSatisfaction(sessionId, satisfaction) {
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const stmt = this.db.prepare(`
+      UPDATE work_sessions
+      SET satisfaction = ?, updated_at = ?
+      WHERE id = ?
+    `);
+    stmt.run(satisfaction, now, sessionId);
+  }
+  addMetrics(sessionId, input) {
+    const id = crypto2.randomUUID();
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const stmt = this.db.prepare(`
+      INSERT INTO work_metrics
+        (id, session_id, files_touched, lines_added, lines_removed, complexity_rating, work_type, recorded_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    stmt.run(
+      id,
+      sessionId,
+      input.files_touched ?? 0,
+      input.lines_added ?? 0,
+      input.lines_removed ?? 0,
+      input.complexity_rating ?? 3,
+      input.work_type,
+      now
+    );
+    return {
+      id,
+      session_id: sessionId,
+      files_touched: input.files_touched ?? 0,
+      lines_added: input.lines_added ?? 0,
+      lines_removed: input.lines_removed ?? 0,
+      complexity_rating: input.complexity_rating ?? 3,
+      work_type: input.work_type,
+      recorded_at: new Date(now)
+    };
+  }
+  pauseSession(sessionId, reason) {
+    const session = this.getSession(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+    if (session.status !== "active") {
+      throw new Error(`Cannot pause session with status: ${session.status}`);
+    }
+    this.endCurrentSegment(sessionId, reason);
+    const totalSeconds = this.calculateTotalActiveSeconds(sessionId);
+    this.updateTotalActiveSeconds(sessionId, totalSeconds);
+    this.updateSessionStatus(sessionId, "paused");
+    return this.getSession(sessionId);
+  }
+  resumeSession(sessionId) {
+    const session = this.getSession(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+    if (session.status !== "paused") {
+      throw new Error(`Cannot resume session with status: ${session.status}`);
+    }
+    this.createNewSegment(sessionId, "resume");
+    this.updateSessionStatus(sessionId, "active");
+    return this.getSession(sessionId);
+  }
+  completeSession(sessionId, input) {
+    const session = this.getSession(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+    const segments = this.getSegments(sessionId);
+    const openSegment = segments.find((s) => s.ended_at === null);
+    if (openSegment) {
+      this.endCurrentSegment(sessionId, "session_complete");
+    }
+    const totalSeconds = this.calculateTotalActiveSeconds(sessionId);
+    this.updateTotalActiveSeconds(sessionId, totalSeconds);
+    if (input.satisfaction !== void 0) {
+      this.updateSessionSatisfaction(sessionId, input.satisfaction);
+    }
+    if (input.notes !== void 0) {
+      this.updateSessionNotes(sessionId, input.notes);
+    }
+    if (input.metrics && input.metrics.work_type) {
+      this.addMetrics(sessionId, {
+        files_touched: input.metrics.files_touched,
+        lines_added: input.metrics.lines_added,
+        lines_removed: input.metrics.lines_removed,
+        complexity_rating: input.metrics.complexity_rating,
+        work_type: input.metrics.work_type
+      });
+    }
+    this.updateSessionStatus(sessionId, "completed");
+    return this.getSession(sessionId);
+  }
+  close() {
+    this.db.close();
+  }
+  calculateTotalActiveSeconds(sessionId) {
+    const segments = this.getSegments(sessionId);
+    let totalSeconds = 0;
+    for (const segment of segments) {
+      const startTime = segment.started_at.getTime();
+      const endTime = segment.ended_at ? segment.ended_at.getTime() : Date.now();
+      totalSeconds += Math.floor((endTime - startTime) / 1e3);
+    }
+    return totalSeconds;
+  }
+  createSegmentInternal(sessionId, triggerStart) {
+    const id = crypto2.randomUUID();
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const stmt = this.db.prepare(`
+      INSERT INTO work_segments (id, session_id, started_at, trigger_start)
+      VALUES (?, ?, ?, ?)
+    `);
+    stmt.run(id, sessionId, now, triggerStart);
+    return {
+      id,
+      session_id: sessionId,
+      started_at: new Date(now),
+      ended_at: null,
+      trigger_start: triggerStart,
+      trigger_end: null
+    };
+  }
+  createMetricsInternal(sessionId, input) {
+    const id = crypto2.randomUUID();
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const stmt = this.db.prepare(`
+      INSERT INTO work_metrics (id, session_id, work_type, recorded_at)
+      VALUES (?, ?, ?, ?)
+    `);
+    stmt.run(id, sessionId, input.work_type, now);
+  }
+  toSession(row) {
+    return {
+      id: row.id,
+      feature_id: row.feature_id,
+      feature_description: row.feature_description,
+      scope: row.scope,
+      status: row.status,
+      started_at: new Date(row.started_at),
+      completed_at: row.completed_at ? new Date(row.completed_at) : null,
+      total_active_seconds: row.total_active_seconds,
+      satisfaction: row.satisfaction,
+      notes: row.notes,
+      created_at: new Date(row.created_at),
+      updated_at: new Date(row.updated_at)
+    };
+  }
+  toSegment(row) {
+    return {
+      id: row.id,
+      session_id: row.session_id,
+      started_at: new Date(row.started_at),
+      ended_at: row.ended_at ? new Date(row.ended_at) : null,
+      trigger_start: row.trigger_start,
+      trigger_end: row.trigger_end
+    };
+  }
+  toMetrics(row) {
+    return {
+      id: row.id,
+      session_id: row.session_id,
+      files_touched: row.files_touched,
+      lines_added: row.lines_added,
+      lines_removed: row.lines_removed,
+      complexity_rating: row.complexity_rating,
+      work_type: row.work_type,
+      recorded_at: new Date(row.recorded_at)
+    };
+  }
+};
+
+// plugins/shared-memory/src/chess-timer/predictor.ts
+var Predictor = class {
+  constructor(store) {
+    this.store = store;
+  }
+  getEstimate(input) {
+    const allSessions = this.store.listSessions({ status: "completed", limit: 100 });
+    const metricsCache = /* @__PURE__ */ new Map();
+    const getMetricsCached = (sessionId) => {
+      if (!metricsCache.has(sessionId)) {
+        metricsCache.set(sessionId, this.store.getMetrics(sessionId));
+      }
+      return metricsCache.get(sessionId);
+    };
+    let similar = allSessions;
+    if (input.work_type) {
+      similar = allSessions.filter((s) => {
+        const metrics = getMetricsCached(s.id);
+        if (!metrics || metrics.length === 0) return false;
+        const latestMetrics = metrics[metrics.length - 1];
+        return latestMetrics.work_type === input.work_type;
+      });
+    }
+    if (input.complexity_rating !== void 0) {
+      similar = similar.filter((s) => {
+        const metrics = getMetricsCached(s.id);
+        if (!metrics || metrics.length === 0) return false;
+        const latestMetrics = metrics[metrics.length - 1];
+        return Math.abs(latestMetrics.complexity_rating - input.complexity_rating) <= 1;
+      });
+    }
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1e3);
+    const recentSessions = similar.filter((s) => s.completed_at && s.completed_at > thirtyDaysAgo);
+    const sessionsToUse = recentSessions.length >= 3 ? recentSessions : similar;
+    const sampleCount = sessionsToUse.length;
+    const confidence = this.getConfidence(sampleCount);
+    if (sampleCount === 0) {
+      return {
+        min_seconds: 0,
+        max_seconds: 0,
+        confidence: "low",
+        sample_count: 0,
+        similar_sessions: [],
+        message: "Hard to say\u2014this is new territory for us."
+      };
+    }
+    const durations = sessionsToUse.map((s) => s.total_active_seconds);
+    const sorted = [...durations].sort((a, b) => a - b);
+    const medianIndex = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? (sorted[medianIndex - 1] + sorted[medianIndex]) / 2 : sorted[medianIndex];
+    const min = sorted[0];
+    const max = sorted[sorted.length - 1];
+    let minEstimate;
+    let maxEstimate;
+    let message;
+    if (confidence === "low") {
+      minEstimate = min;
+      maxEstimate = max;
+      message = `Similar work has taken anywhere from ${this.formatDuration(min)} to ${this.formatDuration(max)}`;
+    } else if (confidence === "medium") {
+      const p25Index = Math.max(0, Math.floor(sorted.length * 0.25));
+      const p75Index = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.75));
+      const p25 = sorted[p25Index];
+      const p75 = sorted[p75Index];
+      minEstimate = p25;
+      maxEstimate = p75;
+      message = `Based on ${sampleCount} similar sessions, probably ${this.formatDuration(p25)} to ${this.formatDuration(p75)}`;
+    } else {
+      const stdDev = this.calculateStdDev(durations, median);
+      minEstimate = Math.max(0, median - stdDev);
+      maxEstimate = median + stdDev;
+      message = `This usually takes about ${this.formatDuration(median)}`;
+    }
+    return {
+      min_seconds: Math.round(minEstimate),
+      max_seconds: Math.round(maxEstimate),
+      confidence,
+      sample_count: sampleCount,
+      similar_sessions: sessionsToUse.slice(0, 3).map((s) => ({
+        feature_id: s.feature_id,
+        description: s.feature_description,
+        duration_seconds: s.total_active_seconds
+      })),
+      message
+    };
+  }
+  getConfidence(sampleCount) {
+    if (sampleCount < 5) return "low";
+    if (sampleCount < 15) return "medium";
+    return "high";
+  }
+  calculateStdDev(values, mean) {
+    if (values.length === 0) return 0;
+    const squareDiffs = values.map((v) => Math.pow(v - mean, 2));
+    const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / values.length;
+    return Math.sqrt(avgSquareDiff);
+  }
+  formatDuration(seconds) {
+    if (seconds < 60) return `${seconds} seconds`;
+    const minutes = Math.round(seconds / 60);
+    if (minutes === 1) return "1 minute";
+    if (minutes < 60) return `${minutes} minutes`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMins = minutes % 60;
+    if (remainingMins === 0) return `${hours} hour${hours > 1 ? "s" : ""}`;
+    return `${hours}h ${remainingMins}m`;
+  }
+};
+
 // plugins/shared-memory/src/index.ts
-var LOCAL_DB_PATH = path9.join(os6.homedir(), ".config", "brain-jar", "local.db");
+var LOCAL_DB_PATH = path10.join(os6.homedir(), ".config", "brain-jar", "local.db");
 async function runSetup() {
   const { input } = await Promise.resolve().then(() => (init_dist15(), dist_exports));
   console.log("\n[brain] Shared Memory Setup\n");
@@ -59974,6 +60424,8 @@ async function main() {
   const isConfigured = configStatus.status !== "missing";
   const config2 = isConfigured ? loadConfig() : null;
   const localStore = new LocalStore(LOCAL_DB_PATH);
+  const sessionStore = new SessionStore(LOCAL_DB_PATH);
+  const predictor = new Predictor(sessionStore);
   const mem0Client = config2 ? new Mem0Client(config2.mem0_api_key) : null;
   const profileManager = new ProfileManager();
   const inferenceEngine = new InferenceEngine();
@@ -60001,7 +60453,7 @@ async function main() {
   }
   const server = new McpServer({
     name: "shared-memory",
-    version: "2.1.2"
+    version: "2.2.0"
   });
   server.tool(
     "add_memory",
@@ -60593,6 +61045,377 @@ ${m.content}`
           }
         ]
       };
+    }
+  );
+  server.tool(
+    "start_work_session",
+    "Start tracking time for a coding session. Returns estimate if similar work exists.",
+    {
+      feature_id: external_exports3.string().optional().describe("Branch name or feature identifier"),
+      description: external_exports3.string().optional().describe("What you are building"),
+      work_type: external_exports3.enum(["feature", "bugfix", "refactor", "docs", "other"]).optional().describe("Type of work"),
+      scope: external_exports3.string().optional().describe("Project scope")
+    },
+    async (args) => {
+      const scope = args.scope || detectScope();
+      const feature_id = args.feature_id || `work-${Date.now()}`;
+      const description = args.description || "Coding session";
+      const existing = sessionStore.getActiveSession(scope);
+      if (existing) {
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              message: "Session already active",
+              session: {
+                id: existing.id,
+                feature_id: existing.feature_id,
+                status: existing.status,
+                total_active_seconds: existing.total_active_seconds
+              }
+            }, null, 2)
+          }]
+        };
+      }
+      const session = sessionStore.createSession({
+        feature_id,
+        description,
+        scope,
+        work_type: args.work_type
+      });
+      const estimate = predictor.getEstimate({
+        work_type: args.work_type,
+        description
+      });
+      localStore.add({
+        content: `Started work session: ${description} (${feature_id})`,
+        scope,
+        tags: ["chess-timer", "session-start", args.work_type || "other"]
+      });
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            message: "Session started",
+            session: {
+              id: session.id,
+              feature_id: session.feature_id,
+              description: session.feature_description,
+              started_at: session.started_at.toISOString()
+            },
+            estimate: estimate.sample_count > 0 ? {
+              message: estimate.message,
+              confidence: estimate.confidence,
+              similar_count: estimate.sample_count
+            } : null
+          }, null, 2)
+        }]
+      };
+    }
+  );
+  server.tool(
+    "get_active_session",
+    "Get the current active or paused work session",
+    {
+      scope: external_exports3.string().optional().describe("Project scope (auto-detects if omitted)")
+    },
+    async (args) => {
+      const scope = args.scope || detectScope();
+      const session = sessionStore.getActiveSession(scope);
+      if (!session) {
+        return {
+          content: [{
+            type: "text",
+            text: "No active session."
+          }]
+        };
+      }
+      const segments = sessionStore.getSegments(session.id);
+      const currentSeconds = session.status === "active" ? session.total_active_seconds + Math.floor((Date.now() - segments[segments.length - 1].started_at.getTime()) / 1e3) : session.total_active_seconds;
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            session: {
+              id: session.id,
+              feature_id: session.feature_id,
+              description: session.feature_description,
+              status: session.status,
+              started_at: session.started_at.toISOString(),
+              total_active_seconds: currentSeconds,
+              segment_count: segments.length
+            }
+          }, null, 2)
+        }]
+      };
+    }
+  );
+  server.tool(
+    "pause_work_session",
+    "Pause the current work session (ends current segment)",
+    {
+      session_id: external_exports3.string().optional().describe("Session ID (uses active if omitted)"),
+      reason: external_exports3.enum(["context_switch", "break", "end_of_day", "unknown"]).optional().describe("Why pausing")
+    },
+    async (args) => {
+      try {
+        const scope = detectScope();
+        const session = args.session_id ? sessionStore.getSession(args.session_id) : sessionStore.getActiveSession(scope);
+        if (!session) {
+          return {
+            content: [{ type: "text", text: "No active session to pause." }]
+          };
+        }
+        if (session.status !== "active") {
+          return {
+            content: [{ type: "text", text: `Session is already ${session.status}.` }]
+          };
+        }
+        const paused = sessionStore.pauseSession(session.id, args.reason || "unknown");
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              message: "Session paused",
+              session: {
+                id: paused.id,
+                feature_id: paused.feature_id,
+                total_active_seconds: paused.total_active_seconds
+              }
+            }, null, 2)
+          }]
+        };
+      } catch (error48) {
+        return {
+          content: [{
+            type: "text",
+            text: `Error: ${error48 instanceof Error ? error48.message : "Unknown error"}`
+          }]
+        };
+      }
+    }
+  );
+  server.tool(
+    "resume_work_session",
+    "Resume a paused work session",
+    {
+      session_id: external_exports3.string().optional().describe("Session ID (finds paused session if omitted)")
+    },
+    async (args) => {
+      try {
+        const scope = detectScope();
+        const session = args.session_id ? sessionStore.getSession(args.session_id) : sessionStore.getActiveSession(scope);
+        if (!session) {
+          return {
+            content: [{ type: "text", text: "No paused session to resume." }]
+          };
+        }
+        if (session.status !== "paused") {
+          return {
+            content: [{ type: "text", text: `Session is ${session.status}, not paused.` }]
+          };
+        }
+        const resumed = sessionStore.resumeSession(session.id);
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              message: "Session resumed",
+              session: {
+                id: resumed.id,
+                feature_id: resumed.feature_id,
+                total_active_seconds: resumed.total_active_seconds
+              }
+            }, null, 2)
+          }]
+        };
+      } catch (error48) {
+        return {
+          content: [{
+            type: "text",
+            text: `Error: ${error48 instanceof Error ? error48.message : "Unknown error"}`
+          }]
+        };
+      }
+    }
+  );
+  server.tool(
+    "complete_work_session",
+    "Complete a work session and record final metrics",
+    {
+      session_id: external_exports3.string().optional().describe("Session ID (uses active if omitted)"),
+      satisfaction: external_exports3.number().min(1).max(5).optional().describe("How well it went (1-5)"),
+      notes: external_exports3.string().optional().describe("Learnings or blockers"),
+      files_touched: external_exports3.number().optional().describe("Number of files modified"),
+      lines_added: external_exports3.number().optional().describe("Lines of code added"),
+      lines_removed: external_exports3.number().optional().describe("Lines of code removed"),
+      complexity_rating: external_exports3.number().min(1).max(5).optional().describe("Complexity (1-5)"),
+      work_type: external_exports3.enum(["feature", "bugfix", "refactor", "docs", "other"]).optional().describe("Type of work")
+    },
+    async (args) => {
+      try {
+        const scope = detectScope();
+        const session = args.session_id ? sessionStore.getSession(args.session_id) : sessionStore.getActiveSession(scope);
+        if (!session) {
+          return {
+            content: [{ type: "text", text: "No active session to complete." }]
+          };
+        }
+        if (session.status === "completed") {
+          return {
+            content: [{ type: "text", text: "Session already completed." }]
+          };
+        }
+        const completed = sessionStore.completeSession(session.id, {
+          satisfaction: args.satisfaction,
+          notes: args.notes,
+          metrics: {
+            files_touched: args.files_touched,
+            lines_added: args.lines_added,
+            lines_removed: args.lines_removed,
+            complexity_rating: args.complexity_rating,
+            work_type: args.work_type
+          }
+        });
+        const minutes = Math.round(completed.total_active_seconds / 60);
+        localStore.add({
+          content: `Completed: ${completed.feature_description} (${completed.feature_id}) - ${minutes} minutes`,
+          scope: completed.scope,
+          tags: ["chess-timer", "session-complete", args.work_type || "other"]
+        });
+        const estimate = predictor.getEstimate({ work_type: args.work_type });
+        let comparison = "";
+        if (estimate.sample_count > 0 && estimate.min_seconds > 0) {
+          const avgSimilar = (estimate.min_seconds + estimate.max_seconds) / 2;
+          const diff = (completed.total_active_seconds - avgSimilar) / avgSimilar * 100;
+          if (diff < -10) {
+            comparison = `About ${Math.abs(Math.round(diff))}% faster than similar work.`;
+          } else if (diff > 10) {
+            comparison = `About ${Math.round(diff)}% slower than similar work.`;
+          } else {
+            comparison = "Right in line with similar work.";
+          }
+        }
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              message: "Session completed",
+              session: {
+                id: completed.id,
+                feature_id: completed.feature_id,
+                description: completed.feature_description,
+                total_active_seconds: completed.total_active_seconds,
+                total_minutes: minutes,
+                satisfaction: completed.satisfaction
+              },
+              comparison: comparison || null
+            }, null, 2)
+          }]
+        };
+      } catch (error48) {
+        return {
+          content: [{
+            type: "text",
+            text: `Error: ${error48 instanceof Error ? error48.message : "Unknown error"}`
+          }]
+        };
+      }
+    }
+  );
+  server.tool(
+    "get_work_estimate",
+    "Get a time estimate for upcoming work based on similar past sessions",
+    {
+      description: external_exports3.string().optional().describe("What you plan to build"),
+      work_type: external_exports3.enum(["feature", "bugfix", "refactor", "docs", "other"]).optional().describe("Type of work"),
+      complexity_rating: external_exports3.number().min(1).max(5).optional().describe("Expected complexity (1-5)")
+    },
+    async (args) => {
+      try {
+        const estimate = predictor.getEstimate({
+          description: args.description,
+          work_type: args.work_type,
+          complexity_rating: args.complexity_rating
+        });
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              estimate: {
+                message: estimate.message,
+                confidence: estimate.confidence,
+                sample_count: estimate.sample_count,
+                range_seconds: {
+                  min: estimate.min_seconds,
+                  max: estimate.max_seconds
+                },
+                range_minutes: {
+                  min: Math.round(estimate.min_seconds / 60),
+                  max: Math.round(estimate.max_seconds / 60)
+                },
+                similar_sessions: estimate.similar_sessions.map((s) => ({
+                  feature_id: s.feature_id,
+                  description: s.description,
+                  minutes: Math.round(s.duration_seconds / 60)
+                }))
+              }
+            }, null, 2)
+          }]
+        };
+      } catch (error48) {
+        return {
+          content: [{
+            type: "text",
+            text: `Error: ${error48 instanceof Error ? error48.message : "Unknown error"}`
+          }]
+        };
+      }
+    }
+  );
+  server.tool(
+    "list_work_sessions",
+    "List past work sessions",
+    {
+      scope: external_exports3.string().optional().describe("Filter by project scope"),
+      status: external_exports3.enum(["active", "paused", "completed", "abandoned"]).optional().describe("Filter by status"),
+      limit: external_exports3.number().optional().describe("Maximum results (default: 10)")
+    },
+    async (args) => {
+      try {
+        const sessions = sessionStore.listSessions({
+          scope: args.scope,
+          status: args.status,
+          limit: args.limit || 10
+        });
+        if (sessions.length === 0) {
+          return {
+            content: [{ type: "text", text: "No sessions found." }]
+          };
+        }
+        const formatted = sessions.map((s) => ({
+          id: s.id,
+          feature_id: s.feature_id,
+          description: s.feature_description,
+          status: s.status,
+          minutes: Math.round(s.total_active_seconds / 60),
+          started_at: s.started_at.toISOString().split("T")[0],
+          completed_at: s.completed_at?.toISOString().split("T")[0] || null
+        }));
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ sessions: formatted }, null, 2)
+          }]
+        };
+      } catch (error48) {
+        return {
+          content: [{
+            type: "text",
+            text: `Error: ${error48 instanceof Error ? error48.message : "Unknown error"}`
+          }]
+        };
+      }
     }
   );
   const transport = new StdioServerTransport();

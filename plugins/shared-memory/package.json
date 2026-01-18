@@ -1,6 +1,6 @@
 {
   "name": "shared-memory-mcp",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "MCP server providing persistent memory across agents via Mem0",
   "main": "dist/index.js",
   "scripts": {
