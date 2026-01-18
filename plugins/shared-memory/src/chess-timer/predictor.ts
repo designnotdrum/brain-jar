@@ -17,11 +17,20 @@ export class Predictor {
     // Get completed sessions
     const allSessions = this.store.listSessions({ status: 'completed', limit: 100 });
 
+    // Cache metrics for efficiency (avoid fetching multiple times per session)
+    const metricsCache = new Map<string, ReturnType<typeof this.store.getMetrics>>();
+    const getMetricsCached = (sessionId: string) => {
+      if (!metricsCache.has(sessionId)) {
+        metricsCache.set(sessionId, this.store.getMetrics(sessionId));
+      }
+      return metricsCache.get(sessionId);
+    };
+
     // Filter by work type if specified
     let similar = allSessions;
     if (input.work_type) {
       similar = allSessions.filter((s) => {
-        const metrics = this.store.getMetrics(s.id);
+        const metrics = getMetricsCached(s.id);
         if (!metrics || metrics.length === 0) return false;
         // Use the most recent metrics record
         const latestMetrics = metrics[metrics.length - 1];
@@ -32,7 +41,7 @@ export class Predictor {
     // Filter by complexity if specified (within +-1)
     if (input.complexity_rating !== undefined) {
       similar = similar.filter((s) => {
-        const metrics = this.store.getMetrics(s.id);
+        const metrics = getMetricsCached(s.id);
         if (!metrics || metrics.length === 0) return false;
         // Use the most recent metrics record
         const latestMetrics = metrics[metrics.length - 1];
@@ -64,7 +73,10 @@ export class Predictor {
     // Calculate duration statistics
     const durations = sessionsToUse.map((s) => s.total_active_seconds);
     const sorted = [...durations].sort((a, b) => a - b);
-    const median = sorted[Math.floor(sorted.length / 2)];
+    const medianIndex = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0
+      ? (sorted[medianIndex - 1] + sorted[medianIndex]) / 2
+      : sorted[medianIndex];
     const min = sorted[0];
     const max = sorted[sorted.length - 1];
 
@@ -78,8 +90,8 @@ export class Predictor {
       maxEstimate = max;
       message = `Similar work has taken anywhere from ${this.formatDuration(min)} to ${this.formatDuration(max)}`;
     } else if (confidence === 'medium') {
-      const p25Index = Math.floor(sorted.length * 0.25);
-      const p75Index = Math.floor(sorted.length * 0.75);
+      const p25Index = Math.max(0, Math.floor(sorted.length * 0.25));
+      const p75Index = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.75));
       const p25 = sorted[p25Index];
       const p75 = sorted[p75Index];
       minEstimate = p25;
