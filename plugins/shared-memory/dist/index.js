@@ -43,6 +43,7 @@ const core_1 = require("@brain-jar/core");
 const local_store_1 = require("./local-store");
 const summary_manager_1 = require("./summary-manager");
 const profile_1 = require("./profile");
+const chess_timer_1 = require("./chess-timer");
 const LOCAL_DB_PATH = path.join(os.homedir(), '.config', 'brain-jar', 'local.db');
 async function runSetup() {
     const { input } = await Promise.resolve().then(() => __importStar(require('@inquirer/prompts')));
@@ -81,6 +82,9 @@ async function main() {
     const config = isConfigured ? (0, core_1.loadConfig)() : null;
     // Local store works without Mem0 config
     const localStore = new local_store_1.LocalStore(LOCAL_DB_PATH);
+    // Chess timer stores (use same DB for simplicity)
+    const sessionStore = new chess_timer_1.SessionStore(LOCAL_DB_PATH);
+    const predictor = new chess_timer_1.Predictor(sessionStore);
     // Mem0 client only if configured
     const mem0Client = config ? new core_1.Mem0Client(config.mem0_api_key) : null;
     // Profile manager and inference engine (always available)
@@ -662,6 +666,277 @@ async function main() {
                 },
             ],
         };
+    });
+    // --- Chess Timer Tools ---
+    server.tool('start_work_session', 'Start tracking time for a coding session. Returns estimate if similar work exists.', {
+        feature_id: zod_1.z.string().optional().describe('Branch name or feature identifier'),
+        description: zod_1.z.string().optional().describe('What you are building'),
+        work_type: zod_1.z.enum(['feature', 'bugfix', 'refactor', 'docs', 'other']).optional().describe('Type of work'),
+        scope: zod_1.z.string().optional().describe('Project scope'),
+    }, async (args) => {
+        const scope = args.scope || (0, core_1.detectScope)();
+        const feature_id = args.feature_id || `work-${Date.now()}`;
+        const description = args.description || 'Coding session';
+        // Check for existing active session
+        const existing = sessionStore.getActiveSession(scope);
+        if (existing) {
+            return {
+                content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            message: 'Session already active',
+                            session: {
+                                id: existing.id,
+                                feature_id: existing.feature_id,
+                                status: existing.status,
+                                total_active_seconds: existing.total_active_seconds,
+                            },
+                        }, null, 2),
+                    }],
+            };
+        }
+        // Create new session
+        const session = sessionStore.createSession({
+            feature_id,
+            description,
+            scope,
+            work_type: args.work_type,
+        });
+        // Get estimate for similar work
+        const estimate = predictor.getEstimate({
+            work_type: args.work_type,
+            description,
+        });
+        // Emit memory for cross-plugin visibility
+        localStore.add({
+            content: `Started work session: ${description} (${feature_id})`,
+            scope,
+            tags: ['chess-timer', 'session-start', args.work_type || 'other'],
+        });
+        return {
+            content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        message: 'Session started',
+                        session: {
+                            id: session.id,
+                            feature_id: session.feature_id,
+                            description: session.feature_description,
+                            started_at: session.started_at.toISOString(),
+                        },
+                        estimate: estimate.sample_count > 0 ? {
+                            message: estimate.message,
+                            confidence: estimate.confidence,
+                            similar_count: estimate.sample_count,
+                        } : null,
+                    }, null, 2),
+                }],
+        };
+    });
+    server.tool('get_active_session', 'Get the current active or paused work session', {
+        scope: zod_1.z.string().optional().describe('Project scope (auto-detects if omitted)'),
+    }, async (args) => {
+        const scope = args.scope || (0, core_1.detectScope)();
+        const session = sessionStore.getActiveSession(scope);
+        if (!session) {
+            return {
+                content: [{
+                        type: 'text',
+                        text: 'No active session.',
+                    }],
+            };
+        }
+        const segments = sessionStore.getSegments(session.id);
+        const currentSeconds = session.status === 'active'
+            ? session.total_active_seconds + Math.floor((Date.now() - segments[segments.length - 1].started_at.getTime()) / 1000)
+            : session.total_active_seconds;
+        return {
+            content: [{
+                    type: 'text',
+                    text: JSON.stringify({
+                        session: {
+                            id: session.id,
+                            feature_id: session.feature_id,
+                            description: session.feature_description,
+                            status: session.status,
+                            started_at: session.started_at.toISOString(),
+                            total_active_seconds: currentSeconds,
+                            segment_count: segments.length,
+                        },
+                    }, null, 2),
+                }],
+        };
+    });
+    server.tool('pause_work_session', 'Pause the current work session (ends current segment)', {
+        session_id: zod_1.z.string().optional().describe('Session ID (uses active if omitted)'),
+        reason: zod_1.z.enum(['context_switch', 'break', 'end_of_day', 'unknown']).optional().describe('Why pausing'),
+    }, async (args) => {
+        try {
+            const scope = (0, core_1.detectScope)();
+            const session = args.session_id
+                ? sessionStore.getSession(args.session_id)
+                : sessionStore.getActiveSession(scope);
+            if (!session) {
+                return {
+                    content: [{ type: 'text', text: 'No active session to pause.' }],
+                };
+            }
+            if (session.status !== 'active') {
+                return {
+                    content: [{ type: 'text', text: `Session is already ${session.status}.` }],
+                };
+            }
+            const paused = sessionStore.pauseSession(session.id, args.reason || 'unknown');
+            return {
+                content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            message: 'Session paused',
+                            session: {
+                                id: paused.id,
+                                feature_id: paused.feature_id,
+                                total_active_seconds: paused.total_active_seconds,
+                            },
+                        }, null, 2),
+                    }],
+            };
+        }
+        catch (error) {
+            return {
+                content: [{
+                        type: 'text',
+                        text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    }],
+            };
+        }
+    });
+    server.tool('resume_work_session', 'Resume a paused work session', {
+        session_id: zod_1.z.string().optional().describe('Session ID (finds paused session if omitted)'),
+    }, async (args) => {
+        try {
+            const scope = (0, core_1.detectScope)();
+            const session = args.session_id
+                ? sessionStore.getSession(args.session_id)
+                : sessionStore.getActiveSession(scope);
+            if (!session) {
+                return {
+                    content: [{ type: 'text', text: 'No paused session to resume.' }],
+                };
+            }
+            if (session.status !== 'paused') {
+                return {
+                    content: [{ type: 'text', text: `Session is ${session.status}, not paused.` }],
+                };
+            }
+            const resumed = sessionStore.resumeSession(session.id);
+            return {
+                content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            message: 'Session resumed',
+                            session: {
+                                id: resumed.id,
+                                feature_id: resumed.feature_id,
+                                total_active_seconds: resumed.total_active_seconds,
+                            },
+                        }, null, 2),
+                    }],
+            };
+        }
+        catch (error) {
+            return {
+                content: [{
+                        type: 'text',
+                        text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    }],
+            };
+        }
+    });
+    server.tool('complete_work_session', 'Complete a work session and record final metrics', {
+        session_id: zod_1.z.string().optional().describe('Session ID (uses active if omitted)'),
+        satisfaction: zod_1.z.number().min(1).max(5).optional().describe('How well it went (1-5)'),
+        notes: zod_1.z.string().optional().describe('Learnings or blockers'),
+        files_touched: zod_1.z.number().optional().describe('Number of files modified'),
+        lines_added: zod_1.z.number().optional().describe('Lines of code added'),
+        lines_removed: zod_1.z.number().optional().describe('Lines of code removed'),
+        complexity_rating: zod_1.z.number().min(1).max(5).optional().describe('Complexity (1-5)'),
+        work_type: zod_1.z.enum(['feature', 'bugfix', 'refactor', 'docs', 'other']).optional().describe('Type of work'),
+    }, async (args) => {
+        try {
+            const scope = (0, core_1.detectScope)();
+            const session = args.session_id
+                ? sessionStore.getSession(args.session_id)
+                : sessionStore.getActiveSession(scope);
+            if (!session) {
+                return {
+                    content: [{ type: 'text', text: 'No active session to complete.' }],
+                };
+            }
+            if (session.status === 'completed') {
+                return {
+                    content: [{ type: 'text', text: 'Session already completed.' }],
+                };
+            }
+            const completed = sessionStore.completeSession(session.id, {
+                satisfaction: args.satisfaction,
+                notes: args.notes,
+                metrics: {
+                    files_touched: args.files_touched,
+                    lines_added: args.lines_added,
+                    lines_removed: args.lines_removed,
+                    complexity_rating: args.complexity_rating,
+                    work_type: args.work_type,
+                },
+            });
+            // Emit memory for cross-plugin visibility
+            const minutes = Math.round(completed.total_active_seconds / 60);
+            localStore.add({
+                content: `Completed: ${completed.feature_description} (${completed.feature_id}) - ${minutes} minutes`,
+                scope: completed.scope,
+                tags: ['chess-timer', 'session-complete', args.work_type || 'other'],
+            });
+            // Get comparison to similar sessions
+            const estimate = predictor.getEstimate({ work_type: args.work_type });
+            let comparison = '';
+            if (estimate.sample_count > 0 && estimate.min_seconds > 0) {
+                const avgSimilar = (estimate.min_seconds + estimate.max_seconds) / 2;
+                const diff = ((completed.total_active_seconds - avgSimilar) / avgSimilar) * 100;
+                if (diff < -10) {
+                    comparison = `About ${Math.abs(Math.round(diff))}% faster than similar work.`;
+                }
+                else if (diff > 10) {
+                    comparison = `About ${Math.round(diff)}% slower than similar work.`;
+                }
+                else {
+                    comparison = 'Right in line with similar work.';
+                }
+            }
+            return {
+                content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            message: 'Session completed',
+                            session: {
+                                id: completed.id,
+                                feature_id: completed.feature_id,
+                                description: completed.feature_description,
+                                total_active_seconds: completed.total_active_seconds,
+                                total_minutes: minutes,
+                                satisfaction: completed.satisfaction,
+                            },
+                            comparison: comparison || null,
+                        }, null, 2),
+                    }],
+            };
+        }
+        catch (error) {
+            return {
+                content: [{
+                        type: 'text',
+                        text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    }],
+            };
+        }
     });
     // Connect transport
     const transport = new stdio_js_1.StdioServerTransport();

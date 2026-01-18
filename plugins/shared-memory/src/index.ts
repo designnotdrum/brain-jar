@@ -20,6 +20,8 @@ import { LocalStore } from './local-store';
 import { SummaryManager } from './summary-manager';
 import { AddMemoryInput, SearchMemoryInput, ListMemoriesInput } from './types';
 import { ProfileManager, InferenceEngine } from './profile';
+import { SessionStore, Predictor } from './chess-timer';
+import type { WorkType } from './chess-timer';
 
 const LOCAL_DB_PATH = path.join(os.homedir(), '.config', 'brain-jar', 'local.db');
 
@@ -67,6 +69,10 @@ async function main(): Promise<void> {
 
   // Local store works without Mem0 config
   const localStore = new LocalStore(LOCAL_DB_PATH);
+
+  // Chess timer stores (use same DB for simplicity)
+  const sessionStore = new SessionStore(LOCAL_DB_PATH);
+  const predictor = new Predictor(sessionStore);
 
   // Mem0 client only if configured
   const mem0Client = config ? new Mem0Client(config.mem0_api_key) : null;
@@ -816,6 +822,435 @@ async function main(): Promise<void> {
           },
         ],
       };
+    }
+  );
+
+  // --- Chess Timer Tools ---
+
+  server.tool(
+    'start_work_session',
+    'Start tracking time for a coding session. Returns estimate if similar work exists.',
+    {
+      feature_id: z.string().optional().describe('Branch name or feature identifier'),
+      description: z.string().optional().describe('What you are building'),
+      work_type: z.enum(['feature', 'bugfix', 'refactor', 'docs', 'other']).optional().describe('Type of work'),
+      scope: z.string().optional().describe('Project scope'),
+    },
+    async (args: { feature_id?: string; description?: string; work_type?: WorkType; scope?: string }) => {
+      const scope = args.scope || detectScope();
+      const feature_id = args.feature_id || `work-${Date.now()}`;
+      const description = args.description || 'Coding session';
+
+      // Check for existing active session
+      const existing = sessionStore.getActiveSession(scope);
+      if (existing) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              message: 'Session already active',
+              session: {
+                id: existing.id,
+                feature_id: existing.feature_id,
+                status: existing.status,
+                total_active_seconds: existing.total_active_seconds,
+              },
+            }, null, 2),
+          }],
+        };
+      }
+
+      // Create new session
+      const session = sessionStore.createSession({
+        feature_id,
+        description,
+        scope,
+        work_type: args.work_type,
+      });
+
+      // Get estimate for similar work
+      const estimate = predictor.getEstimate({
+        work_type: args.work_type,
+        description,
+      });
+
+      // Emit memory for cross-plugin visibility
+      localStore.add({
+        content: `Started work session: ${description} (${feature_id})`,
+        scope,
+        tags: ['chess-timer', 'session-start', args.work_type || 'other'],
+      });
+
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({
+            message: 'Session started',
+            session: {
+              id: session.id,
+              feature_id: session.feature_id,
+              description: session.feature_description,
+              started_at: session.started_at.toISOString(),
+            },
+            estimate: estimate.sample_count > 0 ? {
+              message: estimate.message,
+              confidence: estimate.confidence,
+              similar_count: estimate.sample_count,
+            } : null,
+          }, null, 2),
+        }],
+      };
+    }
+  );
+
+  server.tool(
+    'get_active_session',
+    'Get the current active or paused work session',
+    {
+      scope: z.string().optional().describe('Project scope (auto-detects if omitted)'),
+    },
+    async (args: { scope?: string }) => {
+      const scope = args.scope || detectScope();
+      const session = sessionStore.getActiveSession(scope);
+
+      if (!session) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: 'No active session.',
+          }],
+        };
+      }
+
+      const segments = sessionStore.getSegments(session.id);
+      const currentSeconds = session.status === 'active'
+        ? session.total_active_seconds + Math.floor((Date.now() - segments[segments.length - 1].started_at.getTime()) / 1000)
+        : session.total_active_seconds;
+
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({
+            session: {
+              id: session.id,
+              feature_id: session.feature_id,
+              description: session.feature_description,
+              status: session.status,
+              started_at: session.started_at.toISOString(),
+              total_active_seconds: currentSeconds,
+              segment_count: segments.length,
+            },
+          }, null, 2),
+        }],
+      };
+    }
+  );
+
+  server.tool(
+    'pause_work_session',
+    'Pause the current work session (ends current segment)',
+    {
+      session_id: z.string().optional().describe('Session ID (uses active if omitted)'),
+      reason: z.enum(['context_switch', 'break', 'end_of_day', 'unknown']).optional().describe('Why pausing'),
+    },
+    async (args: { session_id?: string; reason?: string }) => {
+      try {
+        const scope = detectScope();
+        const session = args.session_id
+          ? sessionStore.getSession(args.session_id)
+          : sessionStore.getActiveSession(scope);
+
+        if (!session) {
+          return {
+            content: [{ type: 'text' as const, text: 'No active session to pause.' }],
+          };
+        }
+
+        if (session.status !== 'active') {
+          return {
+            content: [{ type: 'text' as const, text: `Session is already ${session.status}.` }],
+          };
+        }
+
+        const paused = sessionStore.pauseSession(session.id, args.reason || 'unknown');
+
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              message: 'Session paused',
+              session: {
+                id: paused.id,
+                feature_id: paused.feature_id,
+                total_active_seconds: paused.total_active_seconds,
+              },
+            }, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'resume_work_session',
+    'Resume a paused work session',
+    {
+      session_id: z.string().optional().describe('Session ID (finds paused session if omitted)'),
+    },
+    async (args: { session_id?: string }) => {
+      try {
+        const scope = detectScope();
+        const session = args.session_id
+          ? sessionStore.getSession(args.session_id)
+          : sessionStore.getActiveSession(scope);
+
+        if (!session) {
+          return {
+            content: [{ type: 'text' as const, text: 'No paused session to resume.' }],
+          };
+        }
+
+        if (session.status !== 'paused') {
+          return {
+            content: [{ type: 'text' as const, text: `Session is ${session.status}, not paused.` }],
+          };
+        }
+
+        const resumed = sessionStore.resumeSession(session.id);
+
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              message: 'Session resumed',
+              session: {
+                id: resumed.id,
+                feature_id: resumed.feature_id,
+                total_active_seconds: resumed.total_active_seconds,
+              },
+            }, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'complete_work_session',
+    'Complete a work session and record final metrics',
+    {
+      session_id: z.string().optional().describe('Session ID (uses active if omitted)'),
+      satisfaction: z.number().min(1).max(5).optional().describe('How well it went (1-5)'),
+      notes: z.string().optional().describe('Learnings or blockers'),
+      files_touched: z.number().optional().describe('Number of files modified'),
+      lines_added: z.number().optional().describe('Lines of code added'),
+      lines_removed: z.number().optional().describe('Lines of code removed'),
+      complexity_rating: z.number().min(1).max(5).optional().describe('Complexity (1-5)'),
+      work_type: z.enum(['feature', 'bugfix', 'refactor', 'docs', 'other']).optional().describe('Type of work'),
+    },
+    async (args: {
+      session_id?: string;
+      satisfaction?: number;
+      notes?: string;
+      files_touched?: number;
+      lines_added?: number;
+      lines_removed?: number;
+      complexity_rating?: number;
+      work_type?: WorkType;
+    }) => {
+      try {
+        const scope = detectScope();
+        const session = args.session_id
+          ? sessionStore.getSession(args.session_id)
+          : sessionStore.getActiveSession(scope);
+
+        if (!session) {
+          return {
+            content: [{ type: 'text' as const, text: 'No active session to complete.' }],
+          };
+        }
+
+        if (session.status === 'completed') {
+          return {
+            content: [{ type: 'text' as const, text: 'Session already completed.' }],
+          };
+        }
+
+        const completed = sessionStore.completeSession(session.id, {
+          satisfaction: args.satisfaction,
+          notes: args.notes,
+          metrics: {
+            files_touched: args.files_touched,
+            lines_added: args.lines_added,
+            lines_removed: args.lines_removed,
+            complexity_rating: args.complexity_rating,
+            work_type: args.work_type,
+          },
+        });
+
+        // Emit memory for cross-plugin visibility
+        const minutes = Math.round(completed.total_active_seconds / 60);
+        localStore.add({
+          content: `Completed: ${completed.feature_description} (${completed.feature_id}) - ${minutes} minutes`,
+          scope: completed.scope,
+          tags: ['chess-timer', 'session-complete', args.work_type || 'other'],
+        });
+
+        // Get comparison to similar sessions
+        const estimate = predictor.getEstimate({ work_type: args.work_type });
+        let comparison = '';
+        if (estimate.sample_count > 0 && estimate.min_seconds > 0) {
+          const avgSimilar = (estimate.min_seconds + estimate.max_seconds) / 2;
+          const diff = ((completed.total_active_seconds - avgSimilar) / avgSimilar) * 100;
+          if (diff < -10) {
+            comparison = `About ${Math.abs(Math.round(diff))}% faster than similar work.`;
+          } else if (diff > 10) {
+            comparison = `About ${Math.round(diff)}% slower than similar work.`;
+          } else {
+            comparison = 'Right in line with similar work.';
+          }
+        }
+
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              message: 'Session completed',
+              session: {
+                id: completed.id,
+                feature_id: completed.feature_id,
+                description: completed.feature_description,
+                total_active_seconds: completed.total_active_seconds,
+                total_minutes: minutes,
+                satisfaction: completed.satisfaction,
+              },
+              comparison: comparison || null,
+            }, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'get_work_estimate',
+    'Get a time estimate for upcoming work based on similar past sessions',
+    {
+      description: z.string().optional().describe('What you plan to build'),
+      work_type: z.enum(['feature', 'bugfix', 'refactor', 'docs', 'other']).optional().describe('Type of work'),
+      complexity_rating: z.number().min(1).max(5).optional().describe('Expected complexity (1-5)'),
+    },
+    async (args: { description?: string; work_type?: WorkType; complexity_rating?: number }) => {
+      try {
+        const estimate = predictor.getEstimate({
+          description: args.description,
+          work_type: args.work_type,
+          complexity_rating: args.complexity_rating,
+        });
+
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              estimate: {
+                message: estimate.message,
+                confidence: estimate.confidence,
+                sample_count: estimate.sample_count,
+                range_seconds: {
+                  min: estimate.min_seconds,
+                  max: estimate.max_seconds,
+                },
+                range_minutes: {
+                  min: Math.round(estimate.min_seconds / 60),
+                  max: Math.round(estimate.max_seconds / 60),
+                },
+                similar_sessions: estimate.similar_sessions.map((s) => ({
+                  feature_id: s.feature_id,
+                  description: s.description,
+                  minutes: Math.round(s.duration_seconds / 60),
+                })),
+              },
+            }, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'list_work_sessions',
+    'List past work sessions',
+    {
+      scope: z.string().optional().describe('Filter by project scope'),
+      status: z.enum(['active', 'paused', 'completed', 'abandoned']).optional().describe('Filter by status'),
+      limit: z.number().optional().describe('Maximum results (default: 10)'),
+    },
+    async (args: { scope?: string; status?: 'active' | 'paused' | 'completed' | 'abandoned'; limit?: number }) => {
+      try {
+        const sessions = sessionStore.listSessions({
+          scope: args.scope,
+          status: args.status,
+          limit: args.limit || 10,
+        });
+
+        if (sessions.length === 0) {
+          return {
+            content: [{ type: 'text' as const, text: 'No sessions found.' }],
+          };
+        }
+
+        const formatted = sessions.map((s) => ({
+          id: s.id,
+          feature_id: s.feature_id,
+          description: s.feature_description,
+          status: s.status,
+          minutes: Math.round(s.total_active_seconds / 60),
+          started_at: s.started_at.toISOString().split('T')[0],
+          completed_at: s.completed_at?.toISOString().split('T')[0] || null,
+        }));
+
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({ sessions: formatted }, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          }],
+        };
+      }
     }
   );
 
