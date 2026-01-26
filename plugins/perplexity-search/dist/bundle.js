@@ -40278,7 +40278,7 @@ async function runSetupWizard() {
       if (!claudeConfig.mcpServers) {
         claudeConfig.mcpServers = {};
       }
-      claudeConfig.mcpServers["perplexity-search"] = {
+      claudeConfig.mcpServers["pplx"] = {
         command: "node",
         args: [serverPath],
         env: {}
@@ -40296,7 +40296,7 @@ async function runSetupWizard() {
       console.error("\n   You can manually add this to ~/.claude.json:");
       console.error("   {");
       console.error('     "mcpServers": {');
-      console.error('       "perplexity-search": {');
+      console.error('       "pplx": {');
       console.error('         "command": "node",');
       console.error(`         "args": ["${serverPath}"],`);
       console.error('         "env": {}');
@@ -40341,7 +40341,7 @@ async function main() {
   const server = new Server(
     {
       name: "perplexity-search",
-      version: "2.0.2"
+      version: "2.0.3"
     },
     {
       capabilities: {
