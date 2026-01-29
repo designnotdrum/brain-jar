@@ -1,6 +1,6 @@
 {
   "name": "shared-memory",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Persistent memory across agents with semantic search",
   "author": {
     "name": "Nick Mason"
@@ -8,7 +8,7 @@
   "license": "MIT",
   "keywords": ["memory", "mem0", "mcp", "persistence"],
   "mcpServers": {
-    "shared-memory": {
+    "mem": {
       "command": "node",
       "args": ["${CLAUDE_PLUGIN_ROOT}/run.js"]
     }
